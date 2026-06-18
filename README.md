@@ -197,6 +197,11 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 
 ## Changelog
 
+### v4.3 — Guaranteed client-side dedup of already-read books
+
+- **Fixed:** Magpie Murders and other already-read books were still occasionally appearing in recommendations even after v4.2. Root cause: with 300+ books in the exclusion list, the model would miss entries buried in a long prompt.
+- **Fix approach:** Two-layer defense. The prompt still sends the full read list as a hint to the model. After the API response, JavaScript filters every recommendation against a `Set` of all read titles (lowercase, trimmed) before anything renders. The model is now just a hint — JS does the actual enforcement. An already-read book cannot get through regardless of what the model returns.
+
 ### v4.2 — Exclude full reading list from recommendations
 
 - **Fixed:** Recommendations were suggesting books the user had already read (e.g. *The Sanatorium*, *The Magpie Murders*) because the prompt only sent books from the clicked genre, not the full library. The prompt now sends the user's complete reading list as an explicit exclusion list so the model cannot suggest any book already read, regardless of which genre it was filed under.
