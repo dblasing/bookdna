@@ -1,641 +1,715 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BookDNA</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>BookDNA™</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#080C14;color:#E8E4DC;font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
-.app{min-height:100vh}
+:root{
+  --bg:#06090F;--bg2:#0C1220;--bg3:#111827;
+  --teal:#00D4B4;--purple:#7B61FF;--amber:#F5A623;
+  --text:#E8E4DC;--muted:#8892A4;--faint:#3A4459;
+  --panel-w:360px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
 
-/* LANDING */
-.landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden}
-.helix-bg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.07;pointer-events:none}
-.logo{font-family:'Playfair Display',serif;font-size:clamp(3rem,8vw,5.5rem);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#00D4B4 0%,#7B61FF 50%,#F5A623 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:0.25rem}
-.tm{font-size:1rem;vertical-align:super;-webkit-text-fill-color:#00D4B4;color:#00D4B4}
-.tagline{font-size:clamp(1rem,2.5vw,1.25rem);color:#8892A4;font-weight:300;letter-spacing:0.05em;margin-bottom:3rem;text-align:center;max-width:600px}
-.drop-zone{border:1.5px dashed rgba(0,212,180,0.4);border-radius:20px;padding:3rem 4rem;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(0,212,180,0.03);max-width:520px;width:100%;position:relative}
-.drop-zone:hover,.drop-zone.drag-over{border-color:#00D4B4;background:rgba(0,212,180,0.08);transform:translateY(-2px)}
-.drop-icon{font-size:3rem;margin-bottom:1rem;display:block}
-.drop-title{font-size:1.1rem;font-weight:500;color:#E8E4DC;margin-bottom:0.5rem}
-.drop-sub{font-size:0.85rem;color:#5A6478;margin-bottom:1.5rem}
-.upload-btn{background:#00D4B4;color:#080C14;border:none;padding:0.75rem 2rem;border-radius:50px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.03em}
-.upload-btn:hover{background:#00F0CC;transform:translateY(-1px)}
-.file-input{display:none}
-.features{display:flex;gap:2rem;margin-top:3rem;flex-wrap:wrap;justify-content:center}
-.feature{text-align:center;max-width:160px}
-.feature-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 0.75rem;background:#7B61FF}
-.feature-dot.teal{background:#00D4B4}
-.feature-dot.amber{background:#F5A623}
-.feature-text{font-size:0.8rem;color:#5A6478;line-height:1.5}
+/* ── STARS BG ── */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 
-/* ANALYZING */
-.analyzing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;padding:2rem}
-.progress-ring-wrap{position:relative;width:120px;height:120px}
-.progress-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.1rem;font-weight:600;color:#00D4B4}
-.analyzing-text{font-size:1rem;color:#8892A4;text-align:center;max-width:400px}
-.analyzing-title{font-family:'Playfair Display',serif;font-size:2rem;color:#E8E4DC}
+/* ── PAGES ── */
+.page{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;transition:opacity .4s,transform .4s}
+.page.off{opacity:0;pointer-events:none;transform:translateY(20px)}
 
-/* DNA MAP */
-.dna-view{min-height:100vh;display:flex;flex-direction:column}
-.top-bar{padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
-.top-logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#00D4B4,#7B61FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stats-bar{display:flex;gap:2rem}
-.stat{text-align:center}
-.stat-n{font-size:1.25rem;font-weight:600;color:#00D4B4}
-.stat-l{font-size:0.7rem;color:#5A6478;text-transform:uppercase;letter-spacing:0.08em}
-.reset-btn{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#8892A4;padding:0.5rem 1.25rem;border-radius:50px;font-size:0.8rem;cursor:pointer;transition:all 0.2s}
-.reset-btn:hover{border-color:#00D4B4;color:#00D4B4}
-.map-container{flex:1;display:flex;position:relative;overflow:hidden}
-.canvas-wrap{flex:1;position:relative;overflow:hidden}
-#dnaCanvas{width:100%;height:100%;cursor:grab}
-#dnaCanvas:active{cursor:grabbing}
+/* ── LANDING ── */
+#landing{gap:0;padding:2rem;text-align:center}
+.wordmark{font-family:'Playfair Display',serif;font-size:clamp(3.5rem,9vw,6rem);font-weight:900;line-height:1;letter-spacing:-3px;position:relative;display:inline-block;margin-bottom:.5rem}
+.wordmark span.glow{background:linear-gradient(135deg,var(--teal) 0%,var(--purple) 55%,var(--amber) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.wordmark sup{font-size:.9rem;font-weight:500;-webkit-text-fill-color:var(--teal);color:var(--teal);vertical-align:super;letter-spacing:0}
+.sub{font-size:clamp(.9rem,2vw,1.15rem);color:var(--muted);font-weight:300;letter-spacing:.04em;max-width:540px;line-height:1.6;margin-bottom:3rem}
 
-/* PANEL */
-.side-panel{width:340px;background:#0D1220;border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;overflow:hidden;transition:all 0.3s;flex-shrink:0}
-.side-panel.hidden{width:0;border:none}
-.panel-inner{padding:1.5rem;overflow-y:auto;flex:1}
-.panel-genre{font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.5rem}
-.panel-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:0.35rem;line-height:1.3}
-.panel-meta{font-size:0.8rem;color:#5A6478;margin-bottom:1.25rem}
-.your-books-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#5A6478;margin-bottom:0.75rem}
-.book-chip{display:flex;align-items:center;gap:0.6rem;padding:0.6rem 0.75rem;background:rgba(255,255,255,0.04);border-radius:10px;margin-bottom:0.5rem;border:1px solid rgba(255,255,255,0.06)}
-.book-chip-rating{font-size:0.7rem;color:#F5A623;font-weight:600;margin-left:auto;white-space:nowrap}
-.book-chip-title{font-size:0.82rem;color:#C8C4BC;line-height:1.3}
-.book-chip-auth{font-size:0.72rem;color:#5A6478}
-.divider{height:1px;background:rgba(255,255,255,0.06);margin:1.25rem 0}
-.recs-label{font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#5A6478;margin-bottom:0.75rem}
-.rec-loading{font-size:0.85rem;color:#5A6478;text-align:center;padding:2rem 0;display:flex;flex-direction:column;align-items:center;gap:0.75rem}
-.rec-card{padding:0.9rem;background:rgba(0,212,180,0.05);border:1px solid rgba(0,212,180,0.15);border-radius:12px;margin-bottom:0.75rem;cursor:pointer;transition:all 0.2s}
-.rec-card:hover{background:rgba(0,212,180,0.1);transform:translateX(3px)}
-.rec-title{font-size:0.88rem;font-weight:500;color:#E8E4DC;margin-bottom:0.2rem}
-.rec-author{font-size:0.75rem;color:#5A6478;margin-bottom:0.35rem}
-.rec-why{font-size:0.75rem;color:#7B9AB5;line-height:1.5;font-style:italic}
-.close-panel{background:none;border:none;color:#5A6478;cursor:pointer;font-size:1.2rem;padding:0.25rem;float:right;line-height:1;transition:color 0.2s}
-.close-panel:hover{color:#E8E4DC}
+.drop{border:1.5px dashed rgba(0,212,180,.35);border-radius:24px;padding:2.5rem 3.5rem;background:rgba(0,212,180,.025);max-width:500px;width:100%;cursor:pointer;transition:all .3s;position:relative}
+.drop:hover,.drop.over{border-color:var(--teal);background:rgba(0,212,180,.07);transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,212,180,.08)}
+.drop-icon{font-size:2.8rem;margin-bottom:1rem;display:block;filter:grayscale(.3)}
+.drop h2{font-size:1.05rem;font-weight:500;margin-bottom:.4rem}
+.drop p{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5}
+.btn-primary{display:inline-block;background:var(--teal);color:#040A0D;border:none;padding:.7rem 2rem;border-radius:50px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.04em}
+.btn-primary:hover{background:#00F0CC;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,212,180,.3)}
+#fileIn{display:none}
 
-/* SPINNER */
-.spin{animation:spin 1s linear infinite;display:inline-block}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.dots-ani::after{content:'';animation:dots 1.4s steps(4,end) infinite}
+.pills{display:flex;gap:1.5rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center}
+.pill{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--faint)}
+.pill b{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── ANALYZING ── */
+#analyzing{gap:1.5rem}
+.seq-title{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text)}
+.ring-wrap{position:relative;width:110px;height:110px}
+.ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:600;color:var(--teal)}
+.seq-msg{font-size:.9rem;color:var(--muted);max-width:340px;text-align:center}
+.dots::after{content:'';animation:dots 1.4s steps(4,end) infinite}
 @keyframes dots{0%,20%{content:''}40%{content:'.'}60%{content:'..'}80%,100%{content:'...'}}
 
-/* TOOLTIP */
-.tooltip{position:absolute;background:#1A2235;border:1px solid rgba(0,212,180,0.3);border-radius:10px;padding:0.6rem 0.9rem;font-size:0.8rem;pointer-events:none;opacity:0;transition:opacity 0.2s;max-width:180px;z-index:100}
-.tooltip.visible{opacity:1}
-.tt-name{font-weight:600;color:#E8E4DC;margin-bottom:0.2rem}
-.tt-count{color:#00D4B4;font-size:0.75rem}
+/* ── DNA VIEW ── */
+#dnaView{position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;opacity:1;pointer-events:auto}
+#dnaView.off{opacity:0;pointer-events:none}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.75rem;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;backdrop-filter:blur(12px);background:rgba(6,9,15,.8);z-index:10}
+.tb-logo{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;background:linear-gradient(90deg,var(--teal),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tb-stats{display:flex;gap:2rem}
+.tb-stat .n{font-size:1.1rem;font-weight:600;color:var(--teal);display:block;line-height:1}
+.tb-stat .l{font-size:.65rem;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;display:block}
+.tb-right{display:flex;align-items:center;gap:.75rem}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--muted);padding:.45rem 1.1rem;border-radius:50px;font-size:.75rem;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+.hint{font-size:.7rem;color:var(--faint);font-style:italic}
+
+.map-area{flex:1;display:flex;overflow:hidden;position:relative}
+#cvs{flex:1;cursor:grab;display:block}
+#cvs:active{cursor:grabbing}
+
+/* ── TOOLTIP ── */
+#tip{position:absolute;background:rgba(12,18,32,.95);border:1px solid rgba(0,212,180,.25);border-radius:10px;padding:.55rem .85rem;font-size:.78rem;pointer-events:none;opacity:0;transition:opacity .15s;max-width:200px;backdrop-filter:blur(8px);z-index:50}
+#tip.show{opacity:1}
+#tip .tn{font-weight:600;color:var(--text);margin-bottom:.15rem}
+#tip .tc{color:var(--teal);font-size:.72rem}
+
+/* ── SIDE PANEL ── */
+#panel{width:0;background:var(--bg2);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;transition:width .32s cubic-bezier(.4,0,.2,1);overflow:hidden;flex-shrink:0}
+#panel.open{width:var(--panel-w)}
+.panel-scroll{flex:1;overflow-y:auto;padding:1.5rem;scrollbar-width:thin;scrollbar-color:var(--faint) transparent}
+.panel-scroll::-webkit-scrollbar{width:4px}
+.panel-scroll::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px}
+
+.p-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem}
+.p-tag{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.35rem}
+.p-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;line-height:1.2;color:var(--text)}
+.p-meta{font-size:.75rem;color:var(--muted);margin-top:.3rem}
+.p-close{background:none;border:none;color:var(--faint);cursor:pointer;font-size:1.1rem;padding:.25rem;line-height:1;transition:color .15s;flex-shrink:0}
+.p-close:hover{color:var(--text)}
+
+.sec-label{font-size:.65rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:.65rem}
+.bchip{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem .75rem;background:rgba(255,255,255,.03);border-radius:10px;margin-bottom:.4rem;border:1px solid rgba(255,255,255,.05)}
+.bchip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.bchip-body{flex:1;min-width:0}
+.bchip-t{font-size:.82rem;color:#C8C4BC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.bchip-a{font-size:.72rem;color:var(--faint);margin-top:1px}
+.bchip-r{font-size:.72rem;color:var(--amber);margin-left:auto;white-space:nowrap;padding-left:.5rem;flex-shrink:0}
+
+.divider{height:1px;background:rgba(255,255,255,.05);margin:1.25rem 0}
+
+.rec-loading{text-align:center;padding:2rem 0;color:var(--muted);font-size:.85rem;display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.spin{display:inline-block;animation:spin 1s linear infinite;color:var(--teal);font-size:1.3rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.rcard{padding:.9rem 1rem;background:rgba(0,212,180,.04);border:1px solid rgba(0,212,180,.12);border-radius:12px;margin-bottom:.65rem;cursor:pointer;transition:all .2s}
+.rcard:hover{background:rgba(0,212,180,.09);border-color:rgba(0,212,180,.3);transform:translateX(3px)}
+.rcard-t{font-size:.88rem;font-weight:500;color:var(--text);margin-bottom:.15rem}
+.rcard-a{font-size:.75rem;color:var(--faint);margin-bottom:.35rem}
+.rcard-why{font-size:.75rem;color:#7B9AB5;line-height:1.5;font-style:italic}
+.rcard-link{font-size:.7rem;color:var(--teal);margin-top:.4rem;opacity:.7}
+
+.err-msg{font-size:.82rem;color:var(--muted);text-align:center;padding:1.5rem;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.05);line-height:1.6}
 </style>
 </head>
 <body>
-<div class="app" id="app">
+
+<!-- Starfield -->
+<canvas id="stars"></canvas>
 
 <!-- LANDING -->
-<section class="landing" id="landingPage">
-<svg class="helix-bg" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-<g stroke="#00D4B4" stroke-width="1" fill="none">
-<path d="M400 50 Q600 150 400 250 Q200 350 400 450 Q600 550 400 650 Q200 750 400 850"/>
-<path d="M400 50 Q200 150 400 250 Q600 350 400 450 Q200 550 400 650 Q600 750 400 850"/>
-</g>
-<g fill="#7B61FF" opacity="0.6">
-<circle cx="490" cy="125" r="4"/><circle cx="310" cy="175" r="3"/><circle cx="490" cy="225" r="4"/>
-<circle cx="310" cy="325" r="3"/><circle cx="490" cy="375" r="4"/><circle cx="310" cy="425" r="3"/>
-<circle cx="490" cy="525" r="4"/><circle cx="310" cy="575" r="3"/><circle cx="490" cy="625" r="4"/>
-</g>
-<g stroke="rgba(245,166,35,0.4)" stroke-width="0.5">
-<line x1="490" y1="125" x2="310" y2="175"/><line x1="310" y1="175" x2="490" y2="225"/>
-<line x1="490" y1="375" x2="310" y2="425"/><line x1="310" y1="425" x2="490" y2="525"/>
-</g>
-</svg>
-
-<div class="logo">BookDNA<span class="tm">™</span></div>
-<p class="tagline">Upload your Goodreads reading history. Discover the genetic code of your literary taste.</p>
-
-<div class="drop-zone" id="dropZone">
-<span class="drop-icon">📚</span>
-<div class="drop-title">Drop your Goodreads export here</div>
-<div class="drop-sub">Or click to browse for your CSV file</div>
-<button class="upload-btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
-<input type="file" id="fileInput" class="file-input" accept=".csv">
+<div class="page" id="landing">
+  <div class="wordmark"><span class="glow">BookDNA</span><sup>™</sup></div>
+  <p class="sub">Upload your Goodreads reading history and discover the genetic code of your literary taste — an interactive map of every genre, mood, and subject you've ever loved.</p>
+  <div class="drop" id="drop">
+    <span class="drop-icon">📚</span>
+    <h2>Drop your Goodreads export here</h2>
+    <p>Export your library from Goodreads → My Books → Import &amp; Export, then drop the .csv file here</p>
+    <button class="btn-primary" onclick="document.getElementById('fileIn').click()">Choose File</button>
+    <input type="file" id="fileIn" accept=".csv">
+  </div>
+  <div class="pills">
+    <div class="pill"><b style="background:var(--teal)"></b>Maps every genre you've read</div>
+    <div class="pill"><b style="background:var(--purple)"></b>Clickable interactive bubbles</div>
+    <div class="pill"><b style="background:var(--amber)"></b>AI picks books you'll love next</div>
+  </div>
 </div>
-
-<div class="features">
-<div class="feature"><div class="feature-dot teal"></div><div class="feature-text">Maps your reads by genre, mood & subject</div></div>
-<div class="feature"><div class="feature-dot"></div><div class="feature-text">Interactive DNA nodes — click to explore</div></div>
-<div class="feature"><div class="feature-dot amber"></div><div class="feature-text">AI suggests books you haven't read yet</div></div>
-</div>
-</section>
 
 <!-- ANALYZING -->
-<section class="analyzing" id="analyzingPage" style="display:none">
-<div class="analyzing-title">Sequencing your BookDNA™</div>
-<div class="progress-ring-wrap">
-<svg width="120" height="120"><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/><circle id="progressCircle" cx="60" cy="60" r="50" fill="none" stroke="#00D4B4" stroke-width="6" stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:60px 60px;transition:stroke-dashoffset 0.3s"/></svg>
-<div class="progress-label" id="progressLabel">0%</div>
+<div class="page off" id="analyzing">
+  <div class="seq-title">Sequencing your BookDNA™</div>
+  <div class="ring-wrap">
+    <svg width="110" height="110" style="transform:rotate(-90deg)">
+      <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+      <circle id="ring" cx="55" cy="55" r="46" fill="none" stroke="var(--teal)" stroke-width="5"
+        stroke-dasharray="289" stroke-dashoffset="289" stroke-linecap="round"
+        style="transition:stroke-dashoffset .3s ease"/>
+    </svg>
+    <div class="ring-label" id="pct">0%</div>
+  </div>
+  <div class="seq-msg" id="seqMsg">Parsing your reading history<span class="dots"></span></div>
 </div>
-<div class="analyzing-text" id="analyzingMsg">Parsing your reading history<span class="dots-ani"></span></div>
-</section>
 
-<!-- DNA MAP -->
-<section class="dna-view" id="dnaPage" style="display:none">
-<div class="top-bar">
-<div class="top-logo">BookDNA™</div>
-<div class="stats-bar">
-<div class="stat"><div class="stat-n" id="statBooks">0</div><div class="stat-l">Books</div></div>
-<div class="stat"><div class="stat-n" id="statGenres">0</div><div class="stat-l">Genres</div></div>
-<div class="stat"><div class="stat-n" id="statRated">0</div><div class="stat-l">Avg Rating</div></div>
-</div>
-<button class="reset-btn" onclick="resetApp()">↩ New Upload</button>
-</div>
-<div class="map-container">
-<div class="canvas-wrap">
-<canvas id="dnaCanvas"></canvas>
-<div class="tooltip" id="tooltip"><div class="tt-name" id="ttName"></div><div class="tt-count" id="ttCount"></div></div>
-</div>
-<div class="side-panel hidden" id="sidePanel">
-<div class="panel-inner" id="panelInner"></div>
-</div>
-</div>
-</section>
-
+<!-- DNA VIEW -->
+<div id="dnaView" class="off">
+  <div class="topbar">
+    <div class="tb-logo">BookDNA™</div>
+    <div class="tb-stats">
+      <div class="tb-stat"><span class="n" id="sBooks">0</span><span class="l">Books Read</span></div>
+      <div class="tb-stat"><span class="n" id="sGenres">0</span><span class="l">Genres</span></div>
+      <div class="tb-stat"><span class="n" id="sRating">—</span><span class="l">Avg Rating</span></div>
+    </div>
+    <div class="tb-right">
+      <span class="hint">Click a bubble to explore</span>
+      <button class="btn-ghost" onclick="resetApp()">↩ New Upload</button>
+    </div>
+  </div>
+  <div class="map-area">
+    <canvas id="cvs"></canvas>
+    <div id="tip"><div class="tn" id="tN"></div><div class="tc" id="tC"></div></div>
+    <div id="panel">
+      <div class="panel-scroll" id="panelScroll"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const GENRE_MAP = {
-  "fiction":     {color:"#7B61FF",label:"Literary Fiction"},
-  "mystery":     {color:"#E85D75",label:"Mystery & Thriller"},
-  "thriller":    {color:"#E85D75",label:"Mystery & Thriller"},
-  "crime":       {color:"#E85D75",label:"Mystery & Thriller"},
-  "sci-fi":      {color:"#00D4B4",label:"Sci-Fi & Speculative"},
-  "science fiction":{color:"#00D4B4",label:"Sci-Fi & Speculative"},
-  "fantasy":     {color:"#A855F7",label:"Fantasy & Magic"},
-  "magic":       {color:"#A855F7",label:"Fantasy & Magic"},
-  "biography":   {color:"#F5A623",label:"Biography & Memoir"},
-  "memoir":      {color:"#F5A623",label:"Biography & Memoir"},
-  "autobiography":{color:"#F5A623",label:"Biography & Memoir"},
-  "history":     {color:"#C4863A",label:"History"},
-  "historical":  {color:"#C4863A",label:"History"},
-  "business":    {color:"#3B82F6",label:"Business & Finance"},
-  "finance":     {color:"#3B82F6",label:"Business & Finance"},
-  "economics":   {color:"#3B82F6",label:"Business & Finance"},
-  "self-help":   {color:"#10B981",label:"Self-Help & Growth"},
-  "personal development":{color:"#10B981",label:"Self-Help & Growth"},
-  "psychology":  {color:"#06B6D4",label:"Psychology"},
-  "philosophy":  {color:"#8B5CF6",label:"Philosophy"},
-  "science":     {color:"#22D3EE",label:"Science & Nature"},
-  "nature":      {color:"#22D3EE",label:"Science & Nature"},
-  "romance":     {color:"#F472B6",label:"Romance"},
-  "love":        {color:"#F472B6",label:"Romance"},
-  "graphic novel":{color:"#FB923C",label:"Graphic & Comics"},
-  "comics":      {color:"#FB923C",label:"Graphic & Comics"},
-  "young adult": {color:"#FBBF24",label:"Young Adult"},
-  "children":    {color:"#FBBF24",label:"Young Adult"},
-  "politics":    {color:"#EF4444",label:"Politics & Society"},
-  "society":     {color:"#EF4444",label:"Politics & Society"},
-  "travel":      {color:"#34D399",label:"Travel & Adventure"},
-  "adventure":   {color:"#34D399",label:"Travel & Adventure"},
-  "art":         {color:"#E879F9",label:"Art & Culture"},
-  "music":       {color:"#E879F9",label:"Art & Culture"},
-  "cooking":     {color:"#F97316",label:"Food & Cooking"},
-  "food":        {color:"#F97316",label:"Food & Cooking"},
-  "spirituality":{color:"#A78BFA",label:"Spirituality"},
-  "religion":    {color:"#A78BFA",label:"Spirituality"},
-  "technology":  {color:"#0EA5E9",label:"Technology"},
-  "programming": {color:"#0EA5E9",label:"Technology"},
+/* ── STARFIELD ── */
+(function(){
+  const c=document.getElementById('stars'),x=c.getContext('2d');
+  function resize(){c.width=innerWidth;c.height=innerHeight}
+  resize(); window.addEventListener('resize',resize);
+  const stars=Array.from({length:180},()=>({
+    x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+    r:Math.random()*.9+.1,o:Math.random()*.5+.1,
+    s:Math.random()*.003+.001,p:Math.random()*Math.PI*2
+  }));
+  function draw(){
+    x.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      s.p+=s.s; const o=s.o*(0.6+0.4*Math.sin(s.p));
+      x.beginPath();x.arc(s.x,s.y,s.r,0,Math.PI*2);
+      x.fillStyle=`rgba(200,210,255,${o})`;x.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── GENRE MAP ── */
+const GENRES={
+  "fiction":      {c:"#7B61FF",l:"Literary Fiction"},
+  "literary":     {c:"#7B61FF",l:"Literary Fiction"},
+  "novel":        {c:"#7B61FF",l:"Literary Fiction"},
+  "mystery":      {c:"#E8526A",l:"Mystery & Thriller"},
+  "thriller":     {c:"#E8526A",l:"Mystery & Thriller"},
+  "crime":        {c:"#E8526A",l:"Mystery & Thriller"},
+  "detective":    {c:"#E8526A",l:"Mystery & Thriller"},
+  "suspense":     {c:"#E8526A",l:"Mystery & Thriller"},
+  "sci-fi":       {c:"#00D4B4",l:"Sci-Fi & Speculative"},
+  "science fiction":{c:"#00D4B4",l:"Sci-Fi & Speculative"},
+  "speculative":  {c:"#00D4B4",l:"Sci-Fi & Speculative"},
+  "dystopia":     {c:"#00D4B4",l:"Sci-Fi & Speculative"},
+  "fantasy":      {c:"#A855F7",l:"Fantasy & Magic"},
+  "magic":        {c:"#A855F7",l:"Fantasy & Magic"},
+  "mythology":    {c:"#A855F7",l:"Fantasy & Magic"},
+  "epic":         {c:"#A855F7",l:"Fantasy & Magic"},
+  "biography":    {c:"#F5A623",l:"Biography & Memoir"},
+  "memoir":       {c:"#F5A623",l:"Biography & Memoir"},
+  "autobiography":{c:"#F5A623",l:"Biography & Memoir"},
+  "history":      {c:"#C4863A",l:"History"},
+  "historical":   {c:"#C4863A",l:"History"},
+  "war":          {c:"#C4863A",l:"History"},
+  "business":     {c:"#3B82F6",l:"Business & Finance"},
+  "finance":      {c:"#3B82F6",l:"Business & Finance"},
+  "economics":    {c:"#3B82F6",l:"Business & Finance"},
+  "management":   {c:"#3B82F6",l:"Business & Finance"},
+  "entrepreneur": {c:"#3B82F6",l:"Business & Finance"},
+  "startup":      {c:"#3B82F6",l:"Business & Finance"},
+  "self-help":    {c:"#10B981",l:"Self-Help & Growth"},
+  "self help":    {c:"#10B981",l:"Self-Help & Growth"},
+  "personal development":{c:"#10B981",l:"Self-Help & Growth"},
+  "productivity": {c:"#10B981",l:"Self-Help & Growth"},
+  "leadership":   {c:"#10B981",l:"Self-Help & Growth"},
+  "psychology":   {c:"#06B6D4",l:"Psychology"},
+  "behavior":     {c:"#06B6D4",l:"Psychology"},
+  "cognitive":    {c:"#06B6D4",l:"Psychology"},
+  "philosophy":   {c:"#8B5CF6",l:"Philosophy"},
+  "ethics":       {c:"#8B5CF6",l:"Philosophy"},
+  "science":      {c:"#22D3EE",l:"Science & Nature"},
+  "nature":       {c:"#22D3EE",l:"Science & Nature"},
+  "biology":      {c:"#22D3EE",l:"Science & Nature"},
+  "physics":      {c:"#22D3EE",l:"Science & Nature"},
+  "climate":      {c:"#22D3EE",l:"Science & Nature"},
+  "romance":      {c:"#F472B6",l:"Romance"},
+  "love":         {c:"#F472B6",l:"Romance"},
+  "graphic novel":{c:"#FB923C",l:"Graphic & Comics"},
+  "comics":       {c:"#FB923C",l:"Graphic & Comics"},
+  "manga":        {c:"#FB923C",l:"Graphic & Comics"},
+  "young adult":  {c:"#FBBF24",l:"Young Adult"},
+  "ya ":          {c:"#FBBF24",l:"Young Adult"},
+  "children":     {c:"#FBBF24",l:"Young Adult"},
+  "politics":     {c:"#EF4444",l:"Politics & Society"},
+  "society":      {c:"#EF4444",l:"Politics & Society"},
+  "social":       {c:"#EF4444",l:"Politics & Society"},
+  "journalism":   {c:"#EF4444",l:"Politics & Society"},
+  "travel":       {c:"#34D399",l:"Travel & Adventure"},
+  "adventure":    {c:"#34D399",l:"Travel & Adventure"},
+  "art":          {c:"#E879F9",l:"Art & Culture"},
+  "music":        {c:"#E879F9",l:"Art & Culture"},
+  "film":         {c:"#E879F9",l:"Art & Culture"},
+  "design":       {c:"#E879F9",l:"Art & Culture"},
+  "cooking":      {c:"#F97316",l:"Food & Cooking"},
+  "food":         {c:"#F97316",l:"Food & Cooking"},
+  "culinary":     {c:"#F97316",l:"Food & Cooking"},
+  "spirituality": {c:"#A78BFA",l:"Spirituality"},
+  "religion":     {c:"#A78BFA",l:"Spirituality"},
+  "mindfulness":  {c:"#A78BFA",l:"Spirituality"},
+  "technology":   {c:"#0EA5E9",l:"Technology"},
+  "programming":  {c:"#0EA5E9",l:"Technology"},
+  "software":     {c:"#0EA5E9",l:"Technology"},
+  "artificial intelligence":{c:"#0EA5E9",l:"Technology"},
+  "data":         {c:"#0EA5E9",l:"Technology"},
+  "humor":        {c:"#FDE68A",l:"Humor & Satire"},
+  "satire":       {c:"#FDE68A",l:"Humor & Satire"},
+  "comedy":       {c:"#FDE68A",l:"Humor & Satire"},
+  "horror":       {c:"#6B7280",l:"Horror"},
+  "gothic":       {c:"#6B7280",l:"Horror"},
+  "poetry":       {c:"#C084FC",l:"Poetry & Essays"},
+  "essay":        {c:"#C084FC",l:"Poetry & Essays"},
+  "short stories":{c:"#C084FC",l:"Poetry & Essays"},
+  "health":       {c:"#4ADE80",l:"Health & Wellness"},
+  "medicine":     {c:"#4ADE80",l:"Health & Wellness"},
+  "fitness":      {c:"#4ADE80",l:"Health & Wellness"},
 };
 
-const DEFAULT_GENRE_COLOR = "#4B5563";
-
-function detectGenre(title, author, shelves) {
-  const text = ((title||"")+" "+(author||"")+" "+(shelves||"")).toLowerCase();
-  for (const [kw, info] of Object.entries(GENRE_MAP)) {
-    if (text.includes(kw)) return {key: info.label, color: info.color};
+function detectGenre(title,author,shelves){
+  const t=((title||"")+" "+(author||"")+" "+(shelves||"")).toLowerCase();
+  for(const[kw,info] of Object.entries(GENRES)){
+    if(t.includes(kw)) return{key:info.l,color:info.c};
   }
-  return {key: "General Fiction", color: DEFAULT_GENRE_COLOR};
+  return{key:"General Fiction",color:"#4B5563"};
 }
 
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const headers = parseCSVLine(lines[0]);
-  const idx = (name) => headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
-  const titleIdx = idx("title"), authorIdx = idx("author"), ratingIdx = idx("my rating"),
-        shelvesIdx = idx("bookshelves"), exclusiveIdx = idx("exclusive shelf"),
-        dateReadIdx = idx("date read"), pagesIdx = idx("number of pages");
-  const books = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const cols = parseCSVLine(lines[i]);
-    if (!cols[titleIdx]) continue;
-    const shelf = cols[exclusiveIdx]||"";
-    const g = detectGenre(cols[titleIdx], cols[authorIdx], cols[shelvesIdx]);
+function parseCSVLine(line){
+  const r=[]; let cur="",inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){r.push(cur.trim());cur="";}
+    else{cur+=c;}
+  }
+  r.push(cur.trim()); return r;
+}
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/);
+  if(lines.length<2) return[];
+  const hdrs=parseCSVLine(lines[0]);
+  const idx=n=>hdrs.findIndex(h=>h.toLowerCase().includes(n.toLowerCase()));
+  const ti=idx("title"),ai=idx("author"),ri=idx("my rating"),
+        shi=idx("bookshelves"),ei=idx("exclusive shelf"),pi=idx("number of pages");
+  const books=[];
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const c=parseCSVLine(lines[i]);
+    if(!c[ti]) continue;
+    const g=detectGenre(c[ti],c[ai],c[shi]);
     books.push({
-      title: (cols[titleIdx]||"").replace(/^"|"$/g,""),
-      author: (cols[authorIdx]||"").replace(/^"|"$/g,""),
-      rating: parseInt(cols[ratingIdx])||0,
-      genre: g.key,
-      color: g.color,
-      shelf: shelf,
-      dateRead: cols[dateReadIdx]||"",
-      pages: parseInt(cols[pagesIdx])||0,
+      title:(c[ti]||"").replace(/^"|"$/g,""),
+      author:(c[ai]||"").replace(/^"|"$/g,""),
+      rating:parseInt(c[ri])||0,
+      genre:g.key,color:g.color,
+      pages:parseInt(c[pi])||0,
     });
   }
   return books;
 }
 
-function parseCSVLine(line) {
-  const result = []; let cur = ""; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; } 
-    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ""; }
-    else { cur += c; }
-  }
-  result.push(cur.trim()); return result;
+/* ── STATE ── */
+let allBooks=[],groups={},bubbles=[],selGenre=null;
+let ox=0,oy=0,sc=1,dragging=false,dsx=0,dsy=0,moved=false,hov=null,raf=null;
+
+/* ── FILE HANDLING ── */
+const drop=document.getElementById('drop');
+const fileIn=document.getElementById('fileIn');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');handleFile(e.dataTransfer.files[0])});
+fileIn.addEventListener('change',e=>handleFile(e.target.files[0]));
+drop.addEventListener('click',e=>{if(e.target!==document.querySelector('.btn-primary'))return;});
+
+function handleFile(f){
+  if(!f) return;
+  showPage('analyzing');
+  const r=new FileReader();
+  r.onload=e=>processData(e.target.result);
+  r.readAsText(f);
 }
 
-// State
-let allBooks = [], genreGroups = {}, bubbles = [], selectedGenre = null;
-let offsetX = 0, offsetY = 0, scale = 1;
-let isDragging = false, dragStartX = 0, dragStartY = 0;
-let animFrame = null;
-
-// File handling
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
-dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("drag-over"); handleFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
-
-function handleFile(file) {
-  if (!file) return;
-  showPage("analyzingPage");
-  const reader = new FileReader();
-  reader.onload = e => processData(e.target.result);
-  reader.readAsText(file);
-}
-
-const analyzeMessages = ["Parsing your reading history","Identifying genre signatures","Mapping literary clusters","Building your DNA helix","Calculating genre affinities","Rendering your BookDNA"];
-function showPage(id) {
-  ["landingPage","analyzingPage","dnaPage"].forEach(p => document.getElementById(p).style.display = p===id?"flex":"none");
-  if (id==="dnaPage") document.getElementById(id).style.display="flex";
-}
-
-function processData(csv) {
-  let pct = 0;
-  const steps = analyzeMessages.length;
-  let step = 0;
-  const tick = setInterval(() => {
-    pct = Math.min(100, pct + Math.floor(100/steps) + Math.floor(Math.random()*5));
-    step = Math.min(step+1, steps-1);
-    document.getElementById("progressCircle").style.strokeDashoffset = 314 - (314 * pct/100);
-    document.getElementById("progressLabel").textContent = pct + "%";
-    document.getElementById("analyzingMsg").innerHTML = analyzeMessages[step] + '<span class="dots-ani"></span>';
-    if (pct >= 100) {
+const MSGS=["Parsing your reading history","Identifying genre signatures","Mapping literary clusters","Calculating genre affinities","Building your DNA helix","Rendering your BookDNA"];
+function processData(csv){
+  let pct=0,step=0;
+  const tick=setInterval(()=>{
+    pct=Math.min(100,pct+Math.floor(100/MSGS.length)+Math.floor(Math.random()*4));
+    step=Math.min(step+1,MSGS.length-1);
+    document.getElementById('ring').style.strokeDashoffset=289-(289*pct/100);
+    document.getElementById('pct').textContent=pct+'%';
+    document.getElementById('seqMsg').innerHTML=MSGS[step]+'<span class="dots"></span>';
+    if(pct>=100){
       clearInterval(tick);
-      setTimeout(() => {
-        allBooks = parseCSV(csv);
-        buildGenreGroups();
-        showDNAMap();
-      }, 400);
+      setTimeout(()=>{
+        allBooks=parseCSV(csv);
+        buildGroups();
+        showDNA();
+      },400);
     }
-  }, 350);
+  },350);
 }
 
-function buildGenreGroups() {
-  genreGroups = {};
-  allBooks.forEach(b => {
-    if (!genreGroups[b.genre]) genreGroups[b.genre] = {books:[], color: b.color, totalRating:0, ratedCount:0};
-    genreGroups[b.genre].books.push(b);
-    if (b.rating > 0) { genreGroups[b.genre].totalRating += b.rating; genreGroups[b.genre].ratedCount++; }
+function buildGroups(){
+  groups={};
+  allBooks.forEach(b=>{
+    if(!groups[b.genre]) groups[b.genre]={books:[],color:b.color,tot:0,cnt:0};
+    groups[b.genre].books.push(b);
+    if(b.rating>0){groups[b.genre].tot+=b.rating;groups[b.genre].cnt++;}
   });
 }
 
-function showDNAMap() {
-  showPage("dnaPage");
-  const total = allBooks.length;
-  const genres = Object.keys(genreGroups).length;
-  const rated = allBooks.filter(b=>b.rating>0);
-  const avg = rated.length ? (rated.reduce((s,b)=>s+b.rating,0)/rated.length).toFixed(1) : "—";
-  document.getElementById("statBooks").textContent = total;
-  document.getElementById("statGenres").textContent = genres;
-  document.getElementById("statRated").textContent = avg + (rated.length ? "★" : "");
-  setTimeout(()=>initCanvas(), 100);
+function showPage(id){
+  ['landing','analyzing'].forEach(p=>{
+    const el=document.getElementById(p);
+    if(p===id){el.classList.remove('off');}else{el.classList.add('off');}
+  });
+  const dna=document.getElementById('dnaView');
+  if(id==='dna'){dna.classList.remove('off');}else{dna.classList.add('off');}
 }
 
-// Canvas
-let canvas, ctx, W, H;
-function initCanvas() {
-  canvas = document.getElementById("dnaCanvas");
-  ctx = canvas.getContext("2d");
-  resize();
+function showDNA(){
+  showPage('dna');
+  const rated=allBooks.filter(b=>b.rating>0);
+  const avg=rated.length?(rated.reduce((s,b)=>s+b.rating,0)/rated.length).toFixed(1)+'★':'—';
+  document.getElementById('sBooks').textContent=allBooks.length;
+  document.getElementById('sGenres').textContent=Object.keys(groups).length;
+  document.getElementById('sRating').textContent=avg;
+  setTimeout(initCanvas,80);
+}
+
+/* ── CANVAS ── */
+let cvs,ctx,W,H;
+function initCanvas(){
+  cvs=document.getElementById('cvs');
+  ctx=cvs.getContext('2d');
+  resizeCvs();
   buildBubbles();
-  window.addEventListener("resize", ()=>{ resize(); buildBubbles(); draw(); });
-  canvas.addEventListener("mousemove", onMouseMove);
-  canvas.addEventListener("mousedown", onMouseDown);
-  canvas.addEventListener("mouseup", onMouseUp);
-  canvas.addEventListener("click", onClick);
-  canvas.addEventListener("wheel", onWheel, {passive:true});
+  cvs.addEventListener('mousemove',onMove);
+  cvs.addEventListener('mousedown',onDown);
+  cvs.addEventListener('mouseup',onUp);
+  cvs.addEventListener('mouseleave',()=>{hov=null;document.getElementById('tip').classList.remove('show');});
+  cvs.addEventListener('click',onClic);
+  cvs.addEventListener('wheel',e=>{sc=Math.max(.35,Math.min(3.5,sc*(e.deltaY<0?1.11:.9)));},{passive:true});
+  window.addEventListener('resize',()=>{resizeCvs();buildBubbles();});
+  if(raf) cancelAnimationFrame(raf);
+  loop();
+}
+
+function resizeCvs(){
+  const ma=cvs.parentElement;
+  W=cvs.width=ma.clientWidth;
+  H=cvs.height=ma.clientHeight;
+}
+
+function buildBubbles(){
+  bubbles=[];
+  const entries=Object.entries(groups).sort((a,b)=>b[1].books.length-a[1].books.length);
+  const total=allBooks.length;
+  const n=entries.length;
+  const cx=0,cy=0; // world coords — canvas center is mapped via ox/oy/sc
+  const maxR=Math.min(W,H)*.38;
+  entries.forEach(([genre,data],i)=>{
+    const angle=(i/n)*Math.PI*2-Math.PI/2+(Math.random()-.5)*.3;
+    const frac=data.books.length/total;
+    const r=24+frac*110;
+    const dist=maxR*(0.3+0.7*(1-Math.sqrt(frac)));
+    const bx=cx+Math.cos(angle)*dist, by=cy+Math.sin(angle)*dist;
+    bubbles.push({genre,data,x:bx,y:by,r,color:data.color,pulse:Math.random()*Math.PI*2,sc:0,tsc:1});
+  });
+  bubbles.forEach((b,i)=>setTimeout(()=>{b.tsc=1;},i*55));
+}
+
+function w2s(x,y){return{x:(x+ox)*sc+W/2,y:(y+oy)*sc+H/2};}
+
+function getBubble(mx,my){
+  for(const b of [...bubbles].reverse()){
+    const s=w2s(b.x,b.y),r=b.r*b.sc*sc*1.15;
+    const dx=mx-s.x,dy=my-s.y;
+    if(dx*dx+dy*dy<r*r) return b;
+  }
+  return null;
+}
+
+function loop(){
+  raf=requestAnimationFrame(loop);
+  bubbles.forEach(b=>{b.sc+=(b.tsc-b.sc)*.1;b.pulse+=.018;});
   draw();
 }
 
-function resize() {
-  const wrap = canvas.parentElement;
-  W = canvas.width = wrap.clientWidth;
-  H = canvas.height = wrap.clientHeight;
-}
+function draw(){
+  if(!ctx||!W||!H) return;
+  ctx.clearRect(0,0,W,H);
 
-function buildBubbles() {
-  bubbles = [];
-  const entries = Object.entries(genreGroups).sort((a,b)=>b[1].books.length-a[1].books.length);
-  const total = allBooks.length;
-  const cx = W/2, cy = H/2;
-  const maxR = Math.min(W, H) * 0.38;
-  const n = entries.length;
-  entries.forEach(([genre, data], i) => {
-    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
-    const frac = data.books.length / total;
-    const r = 28 + frac * 120;
-    const dist = maxR * (0.35 + 0.65 * (1 - frac));
-    bubbles.push({
-      genre, data,
-      x: cx + Math.cos(angle) * dist,
-      y: cy + Math.sin(angle) * dist,
-      r, color: data.color,
-      angle,
-      vx: 0, vy: 0,
-      tx: cx + Math.cos(angle) * dist,
-      ty: cy + Math.sin(angle) * dist,
-      scale: 0, targetScale: 1,
-      pulse: Math.random() * Math.PI * 2,
-    });
-  });
-  // animate in
-  bubbles.forEach((b, i) => setTimeout(() => { b.targetScale = 1; }, i * 60));
-  if (!animFrame) loop();
-}
-
-let hovered = null;
-function loop() {
-  animFrame = requestAnimationFrame(loop);
-  bubbles.forEach(b => {
-    b.scale += (b.targetScale - b.scale) * 0.12;
-    b.pulse += 0.02;
-  });
-  draw();
-}
-
-function worldToScreen(x, y) {
-  return { x: (x + offsetX) * scale + W/2, y: (y + offsetY) * scale + H/2 };
-}
-function screenToWorld(x, y) {
-  return { x: (x - W/2) / scale - offsetX, y: (y - H/2) / scale - offsetY };
-}
-
-function draw() {
-  if (!ctx) return;
-  ctx.clearRect(0, 0, W, H);
-  // Draw connections (faint lines between bubbles)
+  // Faint radial grid lines from center
+  const cs=w2s(0,0);
   ctx.save();
-  bubbles.forEach((a, i) => {
-    bubbles.forEach((b, j) => {
-      if (j <= i) return;
-      const sa = worldToScreen(a.x, a.y);
-      const sb = worldToScreen(b.x, b.y);
-      const overlap = hasThemeOverlap(a.genre, b.genre);
-      if (!overlap) return;
-      ctx.beginPath();
-      ctx.moveTo(sa.x, sa.y);
-      ctx.lineTo(sb.x, sb.y);
-      ctx.strokeStyle = "rgba(255,255,255,0.04)";
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    });
-  });
+  for(let ring=1;ring<=3;ring++){
+    ctx.beginPath();
+    ctx.arc(cs.x,cs.y,Math.min(W,H)*.13*ring*sc,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,255,255,${.025/ring})`;
+    ctx.lineWidth=.5; ctx.stroke();
+  }
   ctx.restore();
 
-  // Center glyph
-  const cs = worldToScreen(0, 0);
+  // Connection lines between related bubbles
+  bubbles.forEach((a,i)=>{
+    bubbles.forEach((b,j)=>{
+      if(j<=i) return;
+      if(!related(a.genre,b.genre)) return;
+      const sa=w2s(a.x,a.y),sb=w2s(b.x,b.y);
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(sa.x,sa.y); ctx.lineTo(sb.x,sb.y);
+      ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.lineWidth=.5; ctx.stroke();
+      ctx.restore();
+    });
+  });
+
+  // Center nucleus
+  const pulse=1+Math.sin(Date.now()*.0015)*.08;
   ctx.save();
-  ctx.beginPath(); ctx.arc(cs.x, cs.y, 18*scale, 0, Math.PI*2);
-  ctx.fillStyle = "rgba(0,212,180,0.12)"; ctx.fill();
-  ctx.beginPath(); ctx.arc(cs.x, cs.y, 10*scale, 0, Math.PI*2);
-  ctx.fillStyle = "#00D4B4"; ctx.fill();
+  ctx.beginPath(); ctx.arc(cs.x,cs.y,14*sc*pulse,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,212,180,.18)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(cs.x,cs.y,7*sc,0,Math.PI*2);
+  ctx.fillStyle='#00D4B4'; ctx.fill();
   ctx.restore();
 
   // Bubbles
-  bubbles.forEach(b => {
-    const s = worldToScreen(b.x, b.y);
-    const r = b.r * b.scale * scale;
-    const isSelected = selectedGenre === b.genre;
-    const isHovered = hovered === b;
-    const pulse = isSelected ? 1 + Math.sin(b.pulse)*0.06 : isHovered ? 1.06 : 1;
+  bubbles.forEach(b=>{
+    const s=w2s(b.x,b.y);
+    const r=b.r*b.sc*sc;
+    const isSel=selGenre===b.genre, isHov=hov===b;
+    const pf=isSel?1+Math.sin(b.pulse)*.055:isHov?1.07:1;
 
     ctx.save();
-    // Glow
-    if (isSelected || isHovered) {
-      const grd = ctx.createRadialGradient(s.x, s.y, r*0.5, s.x, s.y, r*2);
-      grd.addColorStop(0, b.color + "44");
-      grd.addColorStop(1, "transparent");
-      ctx.beginPath(); ctx.arc(s.x, s.y, r*2, 0, Math.PI*2);
-      ctx.fillStyle = grd; ctx.fill();
-    }
-    // Main circle
-    ctx.beginPath(); ctx.arc(s.x, s.y, r*pulse, 0, Math.PI*2);
-    ctx.fillStyle = b.color + (isSelected ? "EE" : "99");
-    ctx.fill();
-    ctx.strokeStyle = isSelected ? b.color : b.color + "66";
-    ctx.lineWidth = isSelected ? 2.5 : 1;
-    ctx.stroke();
 
-    // Book count inner ring
-    if (r > 20) {
-      ctx.beginPath(); ctx.arc(s.x, s.y, r*0.55*pulse, 0, Math.PI*2);
-      ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 0.5; ctx.stroke();
+    // Outer glow
+    if(isSel||isHov){
+      const g=ctx.createRadialGradient(s.x,s.y,r*.4,s.x,s.y,r*2.2);
+      g.addColorStop(0,b.color+'33'); g.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(s.x,s.y,r*2.2,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+    }
+
+    // Subtle orbit ring
+    ctx.beginPath(); ctx.arc(s.x,s.y,r*pf*1.18,0,Math.PI*2);
+    ctx.strokeStyle=b.color+(isSel?'55':'22'); ctx.lineWidth=isSel?1.5:.5; ctx.stroke();
+
+    // Main fill
+    ctx.beginPath(); ctx.arc(s.x,s.y,r*pf,0,Math.PI*2);
+    const grad=ctx.createRadialGradient(s.x-r*.2,s.y-r*.2,0,s.x,s.y,r*pf);
+    grad.addColorStop(0,b.color+(isSel?'DD':'88'));
+    grad.addColorStop(1,b.color+(isSel?'99':'44'));
+    ctx.fillStyle=grad; ctx.fill();
+    ctx.strokeStyle=b.color+(isSel?'CC':'66'); ctx.lineWidth=isSel?2:1; ctx.stroke();
+
+    // Inner ring decoration
+    if(r>22){
+      ctx.beginPath(); ctx.arc(s.x,s.y,r*pf*.6,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=.5; ctx.stroke();
     }
 
     // Label
-    const fontSize = Math.max(9, Math.min(14, r * 0.38));
-    ctx.font = `600 ${fontSize}px Inter, sans-serif`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = "#FFFFFF";
-    const label = b.genre.length > 16 ? b.genre.substring(0,14)+"…" : b.genre;
-    ctx.fillText(label, s.x, s.y - fontSize*0.3);
-    ctx.font = `400 ${Math.max(8, fontSize*0.8)}px Inter, sans-serif`;
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.fillText(b.data.books.length + " books", s.x, s.y + fontSize*0.8);
+    const fs=Math.max(8,Math.min(13,r*.36));
+    const lbl=b.genre.length>17?b.genre.substring(0,15)+'\u2026':b.genre;
+    ctx.shadowColor=b.color; ctx.shadowBlur=isSel?8:0;
+    ctx.font=`600 ${fs}px Inter,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle='#FFF';
+    ctx.fillText(lbl,s.x,s.y-fs*.35);
+    ctx.shadowBlur=0;
+    ctx.font=`300 ${Math.max(7,fs*.78)}px Inter,sans-serif`;
+    ctx.fillStyle='rgba(255,255,255,.65)';
+    ctx.fillText(b.data.books.length+' books',s.x,s.y+fs*.85);
 
     ctx.restore();
   });
 }
 
-function hasThemeOverlap(a, b) {
-  const relatedPairs = [
-    ["Literary Fiction","Mystery & Thriller"],["Sci-Fi & Speculative","Fantasy & Magic"],
-    ["Biography & Memoir","History"],["Business & Finance","Self-Help & Growth"],
-    ["Psychology","Philosophy"],["Science & Nature","Technology"],
-  ];
-  return relatedPairs.some(([x,y]) => (a===x&&b===y)||(a===y&&b===x));
-}
+const RELATED=[
+  ["Literary Fiction","Mystery & Thriller"],["Literary Fiction","History"],
+  ["Sci-Fi & Speculative","Fantasy & Magic"],["Sci-Fi & Speculative","Technology"],
+  ["Biography & Memoir","History"],["Biography & Memoir","Politics & Society"],
+  ["Business & Finance","Self-Help & Growth"],["Business & Finance","Technology"],
+  ["Psychology","Philosophy"],["Psychology","Self-Help & Growth"],
+  ["Science & Nature","Technology"],["Art & Culture","Poetry & Essays"],
+  ["Spirituality","Philosophy"],["Horror","Mystery & Thriller"],
+  ["Young Adult","Fantasy & Magic"],["Romance","Literary Fiction"],
+];
+function related(a,b){return RELATED.some(([x,y])=>(a===x&&b===y)||(a===y&&b===x));}
 
-function getBubbleAt(mx, my) {
-  for (const b of [...bubbles].reverse()) {
-    const s = worldToScreen(b.x, b.y);
-    const r = b.r * b.scale * scale * 1.1;
-    const dx = mx-s.x, dy = my-s.y;
-    if (dx*dx+dy*dy < r*r) return b;
+function onMove(e){
+  const rect=cvs.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  if(dragging){
+    moved=true;
+    ox+=(mx-dsx)/sc; oy+=(my-dsy)/sc;
+    dsx=mx; dsy=my; return;
   }
-  return null;
+  const b=getBubble(mx,my);
+  hov=b; cvs.style.cursor=b?'pointer':'grab';
+  const tip=document.getElementById('tip');
+  if(b){
+    const avg=b.data.cnt?(b.data.tot/b.data.cnt).toFixed(1):null;
+    document.getElementById('tN').textContent=b.genre;
+    document.getElementById('tC').textContent=b.data.books.length+' books'+(avg?' · avg '+avg+'★':'');
+    tip.style.left=(mx+16)+'px'; tip.style.top=(my-8)+'px';
+    tip.classList.add('show');
+  } else { tip.classList.remove('show'); }
+}
+function onDown(e){
+  const rect=cvs.getBoundingClientRect();
+  dsx=e.clientX-rect.left; dsy=e.clientY-rect.top;
+  dragging=true; moved=false;
+}
+function onUp(){dragging=false;}
+function onClic(e){
+  if(moved) return;
+  const rect=cvs.getBoundingClientRect();
+  const b=getBubble(e.clientX-rect.left,e.clientY-rect.top);
+  if(b) openPanel(b);
 }
 
-let mouseMoved = false;
-function onMouseMove(e) {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  if (isDragging) {
-    mouseMoved = true;
-    offsetX += (mx - dragStartX) / scale;
-    offsetY += (my - dragStartY) / scale;
-    dragStartX = mx; dragStartY = my;
-    return;
-  }
-  const b = getBubbleAt(mx, my);
-  hovered = b;
-  canvas.style.cursor = b ? "pointer" : isDragging ? "grabbing" : "grab";
-  const tt = document.getElementById("tooltip");
-  if (b) {
-    const avg = b.data.ratedCount ? (b.data.totalRating/b.data.ratedCount).toFixed(1) : null;
-    document.getElementById("ttName").textContent = b.genre;
-    document.getElementById("ttCount").textContent = b.data.books.length + " books" + (avg ? " · avg " + avg + "★" : "");
-    tt.style.left = (e.clientX - canvas.getBoundingClientRect().left + 14) + "px";
-    tt.style.top = (e.clientY - canvas.getBoundingClientRect().top - 10) + "px";
-    tt.classList.add("visible");
-  } else { tt.classList.remove("visible"); }
-}
-
-function onMouseDown(e) {
-  const rect = canvas.getBoundingClientRect();
-  dragStartX = e.clientX - rect.left; dragStartY = e.clientY - rect.top;
-  isDragging = true; mouseMoved = false;
-}
-function onMouseUp() { isDragging = false; }
-function onWheel(e) {
-  const factor = e.deltaY < 0 ? 1.1 : 0.9;
-  scale = Math.max(0.4, Math.min(3, scale * factor));
-}
-
-function onClick(e) {
-  if (mouseMoved) return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  const b = getBubbleAt(mx, my);
-  if (b) openPanel(b);
-}
-
-function openPanel(b) {
-  selectedGenre = b.genre;
-  const panel = document.getElementById("sidePanel");
-  panel.classList.remove("hidden");
+/* ── PANEL ── */
+function openPanel(b){
+  selGenre=b.genre;
+  document.getElementById('panel').classList.add('open');
   renderPanel(b);
-  setTimeout(()=>{ resize(); }, 310);
+  setTimeout(resizeCvs,340);
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  selGenre=null;
+  setTimeout(resizeCvs,340);
 }
 
-function renderPanel(b) {
-  const top5 = [...b.data.books].sort((a,x)=>x.rating-a.rating).slice(0,8);
-  const avg = b.data.ratedCount ? (b.data.totalRating/b.data.ratedCount).toFixed(1) : "—";
-  let html = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem">
+function renderPanel(b){
+  const books=[...b.data.books].sort((a,x)=>x.rating-a.rating);
+  const avg=b.data.cnt?(b.data.tot/b.data.cnt).toFixed(1):'—';
+  const show=books.slice(0,10);
+  const ps=b.data.books.filter(x=>x.pages>0);
+  const ap=ps.length?Math.round(ps.reduce((s,x)=>s+x.pages,0)/ps.length):0;
+
+  document.getElementById('panelScroll').innerHTML=`
+    <div class="p-header">
       <div>
-        <div class="panel-genre" style="color:${b.color}">${b.data.books.length} books in your DNA</div>
-        <div class="panel-title">${b.genre}</div>
-        <div class="panel-meta">Avg rating: ${avg}★ · ${b.data.books.filter(x=>x.pages>0).length > 0 ? Math.round(b.data.books.filter(x=>x.pages>0).reduce((s,x)=>s+x.pages,0)/b.data.books.filter(x=>x.pages>0).length) + " avg pages" : ""}</div>
+        <div class="p-tag" style="color:${b.color}">${b.data.books.length} books · avg ${avg}★${ap?' · '+ap+' pg avg':''}</div>
+        <div class="p-title">${b.genre}</div>
       </div>
-      <button class="close-panel" onclick="closePanel()">✕</button>
+      <button class="p-close" onclick="closePanel()">✕</button>
     </div>
-    <div class="your-books-label">Your reads</div>
-    ${top5.map(bk=>`
-    <div class="book-chip">
-      <div style="width:8px;height:8px;border-radius:50%;background:${b.color};flex-shrink:0;margin-top:2px"></div>
-      <div style="flex:1;min-width:0">
-        <div class="book-chip-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bk.title}</div>
-        <div class="book-chip-auth">${bk.author}</div>
-      </div>
-      ${bk.rating > 0 ? `<div class="book-chip-rating">${"★".repeat(bk.rating)}</div>` : ""}
-    </div>`).join("")}
+
+    <div class="sec-label">Your reads</div>
+    ${show.map(bk=>`
+      <div class="bchip">
+        <div class="bchip-dot" style="background:${b.color}"></div>
+        <div class="bchip-body">
+          <div class="bchip-t">${esc(bk.title)}</div>
+          <div class="bchip-a">${esc(bk.author)}</div>
+        </div>
+        ${bk.rating>0?`<div class="bchip-r">${'★'.repeat(bk.rating)}</div>`:''}
+      </div>`).join('')}
+    ${books.length>10?`<div style="font-size:.72rem;color:var(--faint);text-align:center;padding:.5rem 0">+${books.length-10} more books</div>`:''}
+
     <div class="divider"></div>
-    <div class="recs-label">AI recommendations</div>
-    <div id="recArea"><div class="rec-loading"><div class="spin" style="font-size:1.2rem;color:#00D4B4">◌</div><div>Consulting the AI librarian<span class="dots-ani"></span></div></div></div>
+    <div class="sec-label">AI recommendations for you</div>
+    <div id="recArea">
+      <div class="rec-loading">
+        <div class="spin">◌</div>
+        <div>Consulting the AI librarian<span class="dots"></span></div>
+      </div>
+    </div>
   `;
-  document.getElementById("panelInner").innerHTML = html;
   fetchRecs(b);
 }
 
-function closePanel() {
-  document.getElementById("sidePanel").classList.add("hidden");
-  selectedGenre = null;
-  setTimeout(()=>resize(), 310);
-}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-async function fetchRecs(b) {
-  const readTitles = b.data.books.slice(0,10).map(x=>`"${x.title}" by ${x.author}`).join(", ");
-  const prompt = `You are a book recommendation expert. A reader has read these ${b.genre} books: ${readTitles}. 
-Suggest exactly 5 books they haven't read yet that fit ${b.genre} or adjacent genres. For each book return ONLY a JSON array (no markdown, no preamble) with objects having: title, author, why (1 sentence explaining why they'd love it based on what they've read). Example format: [{"title":"...","author":"...","why":"..."}]`;
+async function fetchRecs(b){
+  const readTitles=b.data.books.slice(0,12).map(x=>'"'+x.title+'" by '+x.author).join(', ');
+  const prompt=`You are an expert book recommender. A reader's ${b.genre} reading history: ${readTitles}.
+
+Recommend exactly 5 books they have NOT read. Choose books that deeply match their demonstrated taste.
+Respond ONLY with a valid JSON array. No markdown fences, no preamble, no explanation outside the JSON.
+Each object: {"title":"...","author":"...","why":"one sentence why they will love this based on what they read"}`;
 
   try {
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-6",
-        max_tokens:1000,
-        messages:[{role:"user",content:prompt}]
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1024,
+        messages:[{role:'user',content:prompt}]
       })
     });
-    const data = await resp.json();
-    const text = data.content?.map(c=>c.text||"").join("") || "";
-    let recs = [];
-    try {
-      const clean = text.replace(/```json|```/g,"").trim();
-      const start = clean.indexOf("["), end = clean.lastIndexOf("]");
-      recs = JSON.parse(clean.substring(start, end+1));
-    } catch(e) { recs = []; }
-    
-    const recArea = document.getElementById("recArea");
-    if (!recArea) return;
-    if (!recs.length) {
-      recArea.innerHTML = `<div style="font-size:0.85rem;color:#5A6478;text-align:center;padding:1.5rem 0">Couldn't load recommendations right now.</div>`;
+
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err.error?.message||'API error '+resp.status);
+    }
+
+    const data=await resp.json();
+    const raw=(data.content||[]).map(c=>c.text||'').join('');
+    let recs=[];
+    try{
+      const clean=raw.replace(/```json|```/g,'').trim();
+      const s=clean.indexOf('['),e=clean.lastIndexOf(']');
+      if(s>-1&&e>-1) recs=JSON.parse(clean.slice(s,e+1));
+    }catch(pe){recs=[];}
+
+    const area=document.getElementById('recArea');
+    if(!area) return;
+
+    if(!recs.length){
+      area.innerHTML=`<div class="err-msg">Couldn't parse recommendations — the AI may be busy. Try clicking another genre and coming back.</div>`;
       return;
     }
-    recArea.innerHTML = recs.map(r=>`
-      <div class="rec-card" onclick="searchBook('${(r.title||"").replace(/'/g,"\\'")}')">
-        <div class="rec-title">${r.title}</div>
-        <div class="rec-author">${r.author}</div>
-        <div class="rec-why">${r.why}</div>
-      </div>
-    `).join("");
-  } catch(err) {
-    const recArea = document.getElementById("recArea");
-    if (recArea) recArea.innerHTML = `<div style="font-size:0.85rem;color:#5A6478;text-align:center;padding:1.5rem 0">Recommendations unavailable.</div>`;
+
+    area.innerHTML=recs.map(r=>`
+      <div class="rcard" onclick="window.open('https://www.goodreads.com/search?q='+encodeURIComponent(${JSON.stringify(r.title+' '+r.author)}),'_blank')">
+        <div class="rcard-t">${esc(r.title)}</div>
+        <div class="rcard-a">${esc(r.author)}</div>
+        <div class="rcard-why">${esc(r.why)}</div>
+        <div class="rcard-link">Search on Goodreads →</div>
+      </div>`).join('');
+
+  }catch(err){
+    const area=document.getElementById('recArea');
+    if(area) area.innerHTML=`<div class="err-msg"><strong>Could not load recommendations.</strong><br><br>${esc(err.message||'Unknown error')}<br><br>If you're running this locally, open via a web server or use the hosted GitHub Pages version.</div>`;
   }
 }
 
-function searchBook(title) {
-  window.open("https://www.goodreads.com/search?q="+encodeURIComponent(title), "_blank");
-}
-
-function resetApp() {
-  allBooks = []; genreGroups = {}; bubbles = []; selectedGenre = null;
-  offsetX = 0; offsetY = 0; scale = 1; hovered = null;
-  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
-  document.getElementById("sidePanel").classList.add("hidden");
-  document.getElementById("fileInput").value = "";
-  document.getElementById("progressCircle").style.strokeDashoffset = "314";
-  document.getElementById("progressLabel").textContent = "0%";
-  showPage("landingPage");
+function resetApp(){
+  allBooks=[];groups={};bubbles=[];selGenre=null;
+  ox=0;oy=0;sc=1;hov=null;
+  if(raf){cancelAnimationFrame(raf);raf=null;}
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('fileIn').value='';
+  document.getElementById('ring').style.strokeDashoffset='289';
+  document.getElementById('pct').textContent='0%';
+  showPage('landing');
 }
 </script>
 </body>
