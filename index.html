@@ -302,6 +302,48 @@ html, body {
   border-radius: 10px;
 }
 .err-box strong { color: #E8526A; }
+
+/* ── API KEY INPUT ── */
+.apikey-wrap {
+  margin-top: 1.4rem;
+  max-width: 480px; width: 100%;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.apikey-wrap.keyset {
+  border-color: rgba(0,212,180,.3);
+  background: rgba(0,212,180,.04);
+}
+.apikey-label {
+  font-size: .7rem; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--dim);
+}
+.apikey-row { display: flex; gap: .5rem; align-items: center; }
+.apikey-input {
+  flex: 1; background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px; padding: .5rem .75rem;
+  color: var(--text); font-size: .82rem; font-family: 'Inter', sans-serif;
+  outline: none; transition: border-color .2s;
+}
+.apikey-input:focus { border-color: var(--teal); }
+.apikey-input::placeholder { color: var(--dim); }
+.apikey-save {
+  background: var(--teal); color: #040A0D;
+  border: none; border-radius: 8px;
+  padding: .5rem .9rem; font-size: .78rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .2s;
+  font-family: inherit;
+}
+.apikey-save:hover { background: #00EDD0; }
+.apikey-status { font-size: .72rem; color: var(--muted); }
+.apikey-status.ok { color: var(--teal); }
+.apikey-link { font-size: .7rem; color: var(--dim); }
+.apikey-link a { color: var(--teal); text-decoration: none; }
+.apikey-link a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -323,6 +365,17 @@ html, body {
     <div class="pill"><div class="pill-dot" style="background:var(--teal)"></div>Maps every genre you've read</div>
     <div class="pill"><div class="pill-dot" style="background:var(--purple)"></div>Clickable bubble exploration</div>
     <div class="pill"><div class="pill-dot" style="background:var(--amber)"></div>AI picks your next reads</div>
+  </div>
+
+  <div class="apikey-wrap" id="apikeyWrap">
+    <div class="apikey-label">Anthropic API Key — required for AI recommendations</div>
+    <div class="apikey-row">
+      <input class="apikey-input" id="apikeyInput" type="password"
+        placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+      <button class="apikey-save" onclick="saveApiKey()">Save</button>
+    </div>
+    <div class="apikey-status" id="apikeyStatus">No key saved yet</div>
+    <div class="apikey-link">Get a free key at <a href="https://platform.anthropic.com/api-keys" target="_blank">platform.anthropic.com/api-keys</a> · Stored in session memory only, never sent anywhere except Anthropic</div>
   </div>
 </div>
 
@@ -405,84 +458,143 @@ html, body {
 })();
 
 /* ════════════════════════════════════════
-   GENRE DICTIONARY
+   API KEY
 ════════════════════════════════════════ */
-const GENRE_DICT = [
-  // order matters — first match wins, so put specific before broad
-  { kw: 'science fiction', l: 'Sci-Fi & Speculative', c: '#00D4B4' },
-  { kw: 'sci-fi',          l: 'Sci-Fi & Speculative', c: '#00D4B4' },
-  { kw: 'speculative',     l: 'Sci-Fi & Speculative', c: '#00D4B4' },
-  { kw: 'dystopia',        l: 'Sci-Fi & Speculative', c: '#00D4B4' },
-  { kw: 'graphic novel',   l: 'Graphic & Comics',     c: '#FB923C' },
-  { kw: 'young adult',     l: 'Young Adult',           c: '#FBBF24' },
-  { kw: 'short stories',   l: 'Poetry & Essays',       c: '#C084FC' },
-  { kw: 'self-help',       l: 'Self-Help & Growth',    c: '#10B981' },
-  { kw: 'self help',       l: 'Self-Help & Growth',    c: '#10B981' },
-  { kw: 'personal development', l: 'Self-Help & Growth', c: '#10B981' },
-  { kw: 'mystery',         l: 'Mystery & Thriller',    c: '#E8526A' },
-  { kw: 'thriller',        l: 'Mystery & Thriller',    c: '#E8526A' },
-  { kw: 'crime',           l: 'Mystery & Thriller',    c: '#E8526A' },
-  { kw: 'detective',       l: 'Mystery & Thriller',    c: '#E8526A' },
-  { kw: 'suspense',        l: 'Mystery & Thriller',    c: '#E8526A' },
-  { kw: 'fantasy',         l: 'Fantasy & Magic',       c: '#A855F7' },
-  { kw: 'magic',           l: 'Fantasy & Magic',       c: '#A855F7' },
-  { kw: 'mythology',       l: 'Fantasy & Magic',       c: '#A855F7' },
-  { kw: 'biography',       l: 'Biography & Memoir',    c: '#F5A623' },
-  { kw: 'memoir',          l: 'Biography & Memoir',    c: '#F5A623' },
-  { kw: 'autobiography',   l: 'Biography & Memoir',    c: '#F5A623' },
-  { kw: 'historical',      l: 'History',               c: '#C4863A' },
-  { kw: 'history',         l: 'History',               c: '#C4863A' },
-  { kw: 'business',        l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'finance',         l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'economics',       l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'management',      l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'leadership',      l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'entrepreneur',    l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'startup',         l: 'Business & Finance',    c: '#3B82F6' },
-  { kw: 'productivity',    l: 'Self-Help & Growth',    c: '#10B981' },
-  { kw: 'psychology',      l: 'Psychology',            c: '#06B6D4' },
-  { kw: 'behavior',        l: 'Psychology',            c: '#06B6D4' },
-  { kw: 'cognitive',       l: 'Psychology',            c: '#06B6D4' },
-  { kw: 'philosophy',      l: 'Philosophy',            c: '#8B5CF6' },
-  { kw: 'ethics',          l: 'Philosophy',            c: '#8B5CF6' },
-  { kw: 'science',         l: 'Science & Nature',      c: '#22D3EE' },
-  { kw: 'nature',          l: 'Science & Nature',      c: '#22D3EE' },
-  { kw: 'biology',         l: 'Science & Nature',      c: '#22D3EE' },
-  { kw: 'physics',         l: 'Science & Nature',      c: '#22D3EE' },
-  { kw: 'climate',         l: 'Science & Nature',      c: '#22D3EE' },
-  { kw: 'romance',         l: 'Romance',               c: '#F472B6' },
-  { kw: 'love',            l: 'Romance',               c: '#F472B6' },
-  { kw: 'comics',          l: 'Graphic & Comics',      c: '#FB923C' },
-  { kw: 'manga',           l: 'Graphic & Comics',      c: '#FB923C' },
-  { kw: 'politics',        l: 'Politics & Society',    c: '#EF4444' },
-  { kw: 'society',         l: 'Politics & Society',    c: '#EF4444' },
-  { kw: 'journalism',      l: 'Politics & Society',    c: '#EF4444' },
-  { kw: 'travel',          l: 'Travel & Adventure',    c: '#34D399' },
-  { kw: 'adventure',       l: 'Travel & Adventure',    c: '#34D399' },
-  { kw: 'music',           l: 'Art & Culture',         c: '#E879F9' },
-  { kw: 'design',          l: 'Art & Culture',         c: '#E879F9' },
-  { kw: 'spirituality',    l: 'Spirituality',          c: '#A78BFA' },
-  { kw: 'religion',        l: 'Spirituality',          c: '#A78BFA' },
-  { kw: 'mindfulness',     l: 'Spirituality',          c: '#A78BFA' },
-  { kw: 'technology',      l: 'Technology',            c: '#0EA5E9' },
-  { kw: 'programming',     l: 'Technology',            c: '#0EA5E9' },
-  { kw: 'software',        l: 'Technology',            c: '#0EA5E9' },
-  { kw: 'humor',           l: 'Humor & Satire',        c: '#FDE68A' },
-  { kw: 'satire',          l: 'Humor & Satire',        c: '#FDE68A' },
-  { kw: 'horror',          l: 'Horror',                c: '#6B7280' },
-  { kw: 'gothic',          l: 'Horror',                c: '#6B7280' },
-  { kw: 'poetry',          l: 'Poetry & Essays',       c: '#C084FC' },
-  { kw: 'essay',           l: 'Poetry & Essays',       c: '#C084FC' },
-  { kw: 'health',          l: 'Health & Wellness',     c: '#4ADE80' },
-  { kw: 'medicine',        l: 'Health & Wellness',     c: '#4ADE80' },
-  { kw: 'fitness',         l: 'Health & Wellness',     c: '#4ADE80' },
-  { kw: 'cooking',         l: 'Food & Cooking',        c: '#F97316' },
-  { kw: 'food',            l: 'Food & Cooking',        c: '#F97316' },
-  { kw: 'culinary',        l: 'Food & Cooking',        c: '#F97316' },
-  { kw: 'fiction',         l: 'Literary Fiction',      c: '#7B61FF' },
-  { kw: 'literary',        l: 'Literary Fiction',      c: '#7B61FF' },
-  { kw: 'novel',           l: 'Literary Fiction',      c: '#7B61FF' },
+function getApiKey() { return sessionStorage.getItem('bookdna_key') || ''; }
+
+function saveApiKey() {
+  const val = (document.getElementById('apikeyInput').value || '').trim();
+  if (!val.startsWith('sk-ant-')) {
+    setKeyStatus('Key should start with sk-ant-…', false); return;
+  }
+  sessionStorage.setItem('bookdna_key', val);
+  document.getElementById('apikeyInput').value = '';
+  document.getElementById('apikeyWrap').classList.add('keyset');
+  setKeyStatus('✓ Key saved for this session', true);
+}
+window.saveApiKey = saveApiKey;
+
+function setKeyStatus(msg, ok) {
+  const el = document.getElementById('apikeyStatus');
+  if (el) { el.textContent = msg; el.className = 'apikey-status' + (ok ? ' ok' : ''); }
+}
+
+document.getElementById('apikeyInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveApiKey();
+});
+
+if (getApiKey()) {
+  setKeyStatus('✓ Key saved for this session', true);
+  document.getElementById('apikeyWrap').classList.add('keyset');
+}
+
+/* ════════════════════════════════════════
+   GENRE COLORS
+════════════════════════════════════════ */
+const GENRE_COLORS = {
+  'Literary Fiction': '#7B61FF',    'Mystery & Thriller': '#E8526A',
+  'Sci-Fi & Speculative': '#00D4B4','Fantasy & Magic': '#A855F7',
+  'Biography & Memoir': '#F5A623',  'History': '#C4863A',
+  'Business & Finance': '#3B82F6',  'Self-Help & Growth': '#10B981',
+  'Psychology': '#06B6D4',          'Philosophy': '#8B5CF6',
+  'Science & Nature': '#22D3EE',    'Romance': '#F472B6',
+  'Graphic & Comics': '#FB923C',    'Young Adult': '#FBBF24',
+  'Politics & Society': '#EF4444',  'Travel & Adventure': '#34D399',
+  'Art & Culture': '#E879F9',       'Spirituality': '#A78BFA',
+  'Technology': '#0EA5E9',          'Humor & Satire': '#FDE68A',
+  'Horror': '#6B7280',              'Poetry & Essays': '#C084FC',
+  'Health & Wellness': '#4ADE80',   'Food & Cooking': '#F97316',
+  'General Fiction': '#4B5563',
+};
+
+function colorForGenre(g) { return GENRE_COLORS[g] || '#4B5563'; }
+
+/* AI-powered genre classification — batches all books in one API call */
+async function classifyGenresWithAI(books) {
+  const key = getApiKey();
+  if (!key) return null; // fall back to keywords
+
+  // Build a compact list: index|title|author
+  const lines = books.map((b, i) => `${i}|${b.title}|${b.author}`).join('\n');
+  const genres = Object.keys(GENRE_COLORS).join(', ');
+
+  const prompt =
+    `You are a book genre classifier. Classify each book into EXACTLY one genre from this list:\n` +
+    `${genres}\n\n` +
+    `Books (format: index|title|author):\n${lines}\n\n` +
+    `Respond ONLY with a JSON object mapping each index (as string) to the genre label. ` +
+    `No markdown, no explanation. Example: {"0":"Mystery & Thriller","1":"Biography & Memoir"}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'x-api-key': key,
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001', // fast + cheap for classification
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const raw = (data.content || []).map(c => c.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
+    if (s < 0 || e < 0) return null;
+    return JSON.parse(clean.slice(s, e + 1));
+  } catch (_) { return null; }
+}
+
+/* Keyword fallback (used when no API key or classification fails) */
+const GENRE_KW = [
+  ['science fiction','Sci-Fi & Speculative'],['sci-fi','Sci-Fi & Speculative'],
+  ['speculative','Sci-Fi & Speculative'],['dystopia','Sci-Fi & Speculative'],
+  ['graphic novel','Graphic & Comics'],['young adult','Young Adult'],
+  ['short stories','Poetry & Essays'],['self-help','Self-Help & Growth'],
+  ['self help','Self-Help & Growth'],['personal development','Self-Help & Growth'],
+  ['mystery','Mystery & Thriller'],['thriller','Mystery & Thriller'],
+  ['crime','Mystery & Thriller'],['detective','Mystery & Thriller'],
+  ['suspense','Mystery & Thriller'],['fantasy','Fantasy & Magic'],
+  ['magic','Fantasy & Magic'],['mythology','Fantasy & Magic'],
+  ['biography','Biography & Memoir'],['memoir','Biography & Memoir'],
+  ['autobiography','Biography & Memoir'],['historical','History'],
+  ['history','History'],['business','Business & Finance'],
+  ['finance','Business & Finance'],['economics','Business & Finance'],
+  ['management','Business & Finance'],['leadership','Business & Finance'],
+  ['entrepreneur','Business & Finance'],['startup','Business & Finance'],
+  ['productivity','Self-Help & Growth'],['psychology','Psychology'],
+  ['behavior','Psychology'],['philosophy','Philosophy'],['ethics','Philosophy'],
+  ['science','Science & Nature'],['nature','Science & Nature'],
+  ['biology','Science & Nature'],['physics','Science & Nature'],
+  ['romance','Romance'],['love','Romance'],['comics','Graphic & Comics'],
+  ['manga','Graphic & Comics'],['politics','Politics & Society'],
+  ['society','Politics & Society'],['journalism','Politics & Society'],
+  ['travel','Travel & Adventure'],['adventure','Travel & Adventure'],
+  ['music','Art & Culture'],['design','Art & Culture'],
+  ['spirituality','Spirituality'],['religion','Spirituality'],
+  ['mindfulness','Spirituality'],['technology','Technology'],
+  ['programming','Technology'],['software','Technology'],
+  ['humor','Humor & Satire'],['satire','Humor & Satire'],
+  ['horror','Horror'],['gothic','Horror'],['poetry','Poetry & Essays'],
+  ['essay','Poetry & Essays'],['health','Health & Wellness'],
+  ['medicine','Health & Wellness'],['fitness','Health & Wellness'],
+  ['cooking','Food & Cooking'],['food','Food & Cooking'],
+  ['fiction','Literary Fiction'],['literary','Literary Fiction'],
+  ['novel','Literary Fiction'],
 ];
+
+function keywordGenre(title, author, shelves) {
+  const hay = ((title||'') + ' ' + (author||'') + ' ' + (shelves||'')).toLowerCase();
+  for (const [kw, label] of GENRE_KW) {
+    if (hay.includes(kw)) return label;
+  }
+  return 'General Fiction';
+}
 
 const RELATED_PAIRS = [
   ['Literary Fiction', 'Mystery & Thriller'],
@@ -547,8 +659,8 @@ function parseCSV(text) {
     const rating  = parseInt(c[iRating]) || 0;
     const shelves = (c[iShelves] || '').replace(/^"|"$/g, '').trim();
     const pages   = parseInt(c[iPages]) || 0;
-    const g = detectGenre(title, author, shelves);
-    books.push({ title, author, rating, pages, genre: g.label, color: g.color });
+    const genre = keywordGenre(title, author, shelves);
+    books.push({ title, author, rating, pages, genre, color: colorForGenre(genre) });
   }
   return books;
 }
@@ -623,8 +735,19 @@ function analyze(csv) {
     statusEl.innerHTML = SEQ_MSGS[step] + '<span class="dots"></span>';
     if (pct >= 100) {
       clearInterval(tick);
-      setTimeout(() => {
+      setTimeout(async () => {
         allBooks = parseCSV(csv);
+        // Try AI classification if key is present
+        if (getApiKey()) {
+          statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
+          const aiMap = await classifyGenresWithAI(allBooks);
+          if (aiMap) {
+            allBooks.forEach((b, i) => {
+              const g = aiMap[String(i)];
+              if (g && GENRE_COLORS[g]) { b.genre = g; b.color = colorForGenre(g); }
+            });
+          }
+        }
         buildGroups();
         launchDNA();
       }, 400);
@@ -998,6 +1121,13 @@ function renderPanel(b) {
    AI RECOMMENDATIONS
 ════════════════════════════════════════ */
 async function fetchRecs(b) {
+  const key = getApiKey();
+  if (!key) {
+    const area = document.getElementById('recArea');
+    if (area) area.innerHTML = `<div class="err-box">Enter your Anthropic API key on the landing page to enable recommendations. Click <strong>↩ New Upload</strong> above to go back and add it.</div>`;
+    return;
+  }
+
   const titles = b.data.books
     .slice(0, 12)
     .map(x => `"${x.title}" by ${x.author}`)
@@ -1019,6 +1149,7 @@ async function fetchRecs(b) {
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true',
+        'x-api-key': key,
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
@@ -1029,8 +1160,7 @@ async function fetchRecs(b) {
 
     if (!resp.ok) {
       const errBody = await resp.json().catch(() => ({}));
-      const msg = errBody?.error?.message || `HTTP ${resp.status}`;
-      throw new Error(msg);
+      throw new Error(errBody?.error?.message || `HTTP ${resp.status}`);
     }
 
     const data = await resp.json();
@@ -1039,20 +1169,19 @@ async function fetchRecs(b) {
     let recs = [];
     try {
       const clean = raw.replace(/```json|```/g, '').trim();
-      const start = clean.indexOf('[');
-      const end   = clean.lastIndexOf(']');
+      const start = clean.indexOf('['), end = clean.lastIndexOf(']');
       if (start > -1 && end > start) recs = JSON.parse(clean.slice(start, end + 1));
     } catch (_) { recs = []; }
 
     if (!area()) return;
 
     if (!recs.length) {
-      area().innerHTML = `<div class="err-box">The AI returned an unexpected format. Try clicking a different genre, then come back.</div>`;
+      area().innerHTML = `<div class="err-box">The AI returned an unexpected format. Try clicking a different genre.</div>`;
       return;
     }
 
     area().innerHTML = recs.map(r => `
-      <div class="rcard" onclick="window.open('https://www.goodreads.com/search?q=${encodeURIComponent((r.title || '') + ' ' + (r.author || ''))}','_blank')">
+      <div class="rcard" onclick="window.open('https://www.goodreads.com/search?q=${encodeURIComponent((r.title||'') + ' ' + (r.author||''))}','_blank')">
         <div class="rcard-t">${esc(r.title)}</div>
         <div class="rcard-a">${esc(r.author)}</div>
         <div class="rcard-why">${esc(r.why)}</div>
@@ -1061,14 +1190,7 @@ async function fetchRecs(b) {
 
   } catch (err) {
     if (!area()) return;
-    area().innerHTML = `
-      <div class="err-box">
-        <strong>Recommendations failed:</strong><br><br>
-        ${esc(err.message || 'Unknown error')}<br><br>
-        Make sure you're using the hosted version at
-        <a href="https://dblasing.github.io/bookdna" target="_blank" style="color:var(--teal)">dblasing.github.io/bookdna</a>.
-        The API does not work from a local file:// URL.
-      </div>`;
+    area().innerHTML = `<div class="err-box"><strong>Recommendations failed:</strong><br><br>${esc(err.message || 'Unknown error')}</div>`;
   }
 }
 
