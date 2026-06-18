@@ -197,6 +197,12 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 
 ## Changelog
 
+### v4.5 — Refresh button for AI recommendations
+
+- **Added:** "↻ New suggestions" button next to the AI recommendations label in the side panel. Click it to get a fresh set of 5 recommendations for the same genre without closing and reopening the panel.
+- **Added:** Button disables itself while the API call is in flight to prevent double-firing, then re-enables when results return.
+- **Added:** `currentPanelBubble` state variable tracks which bubble is currently open so the refresh function knows which genre to re-query.
+
 ### v4.4 — Fix JSON truncation on large genres
 
 - **Fixed:** Genres with many books (e.g. History) were returning "unexpected format" errors because the response JSON was being cut off mid-array. Root cause: `max_tokens` was set to 1024, which wasn't enough room for 5 recommendations plus any preamble.
