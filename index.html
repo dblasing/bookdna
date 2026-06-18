@@ -1176,22 +1176,24 @@ async function fetchRecs(b) {
     return;
   }
 
+  // Build a lowercase set of all read titles for guaranteed client-side dedup
+  const readSet = new Set(allBooks.map(x => x.title.toLowerCase().trim()));
+
   const titles = b.data.books
     .slice(0, 12)
     .map(x => `"${x.title}" by ${x.author}`)
     .join(', ');
 
-  // Send the full library as an exclusion list so nothing already read gets suggested
-  const allReadTitles = allBooks.map(x => `"${x.title}" by ${x.author}`).join(', ');
+  // Also send full list in prompt as a hint (model may still miss some — JS filter is the safety net)
+  const allReadTitles = allBooks.map(x => `"${x.title}"`).join(', ');
 
   const prompt =
     `You are an expert book recommender. ` +
     `A reader's ${b.genre} reading history: ${titles}. ` +
-    `Their COMPLETE reading list (do NOT suggest any of these): ${allReadTitles}. ` +
-    `Recommend exactly 5 books they have NOT read that deeply match their taste. ` +
+    `Books they have ALREADY READ — do NOT suggest any of these: ${allReadTitles}. ` +
+    `Recommend exactly 5 books NOT in the above list that deeply match their taste. ` +
     `CRITICAL: Only recommend books you are 100% certain exist and have been published. ` +
     `Do NOT invent titles, authors, or series. Do NOT combine real author names with fake titles. ` +
-    `If you are not completely sure a book exists, do not include it — choose a different one you are certain about. ` +
     `Stick to well-known, widely reviewed published works only. ` +
     `Respond ONLY with a raw JSON array — no markdown, no code fences, no preamble. ` +
     `Each element: {"title":"...","author":"...","why":"one sentence why they will love it"}`;
@@ -1228,6 +1230,9 @@ async function fetchRecs(b) {
       const start = clean.indexOf('['), end = clean.lastIndexOf(']');
       if (start > -1 && end > start) recs = JSON.parse(clean.slice(start, end + 1));
     } catch (_) { recs = []; }
+
+    // Hard filter — remove anything the user has already read, regardless of what the model returned
+    recs = recs.filter(r => !readSet.has((r.title || '').toLowerCase().trim()));
 
     if (!area()) return;
 
