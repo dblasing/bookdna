@@ -1184,7 +1184,7 @@ async function fetchRecs(b) {
     .map(x => `"${x.title}" by ${x.author}`)
     .join(', ');
 
-  // Also send full list in prompt as a hint (model may still miss some — JS filter is the safety net)
+  // Titles only for exclusion list — shorter prompt, model still gets the signal
   const allReadTitles = allBooks.map(x => `"${x.title}"`).join(', ');
 
   const prompt =
@@ -1211,7 +1211,7 @@ async function fetchRecs(b) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 2048,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
