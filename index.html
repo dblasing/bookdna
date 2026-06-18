@@ -1181,9 +1181,13 @@ async function fetchRecs(b) {
     .map(x => `"${x.title}" by ${x.author}`)
     .join(', ');
 
+  // Send the full library as an exclusion list so nothing already read gets suggested
+  const allReadTitles = allBooks.map(x => `"${x.title}" by ${x.author}`).join(', ');
+
   const prompt =
     `You are an expert book recommender. ` +
     `A reader's ${b.genre} reading history: ${titles}. ` +
+    `Their COMPLETE reading list (do NOT suggest any of these): ${allReadTitles}. ` +
     `Recommend exactly 5 books they have NOT read that deeply match their taste. ` +
     `CRITICAL: Only recommend books you are 100% certain exist and have been published. ` +
     `Do NOT invent titles, authors, or series. Do NOT combine real author names with fake titles. ` +
