@@ -344,8 +344,39 @@ html, body {
 .apikey-link { font-size: .7rem; color: var(--dim); }
 .apikey-link a { color: var(--teal); text-decoration: none; }
 .apikey-link a:hover { text-decoration: underline; }
+.apikey-explainer {
+  font-size: .8rem; color: var(--muted); line-height: 1.6;
+}
+.apikey-howlink {
+  color: var(--teal); text-decoration: none; margin-left: .35rem; white-space: nowrap;
+}
+.apikey-howlink:hover { text-decoration: underline; }
+.apikey-steps {
+  display: flex; flex-direction: column; gap: .4rem;
+  background: rgba(0,0,0,.2); border-radius: 10px;
+  padding: .75rem 1rem;
+}
+.apikey-step {
+  display: flex; align-items: flex-start; gap: .65rem;
+  font-size: .78rem; color: var(--muted); line-height: 1.5;
+}
+.apikey-step a { color: var(--teal); text-decoration: none; }
+.apikey-step a:hover { text-decoration: underline; }
+.apikey-step strong { color: var(--text); font-weight: 500; }
+.apikey-step code {
+  font-family: 'Courier New', monospace; font-size: .75rem;
+  background: rgba(255,255,255,.07); padding: .1rem .35rem;
+  border-radius: 4px; color: var(--teal);
+}
+.step-n {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(0,212,180,.15); color: var(--teal);
+  font-size: .7rem; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.apikey-privacy { font-size: .7rem; color: var(--dim); line-height: 1.5; }
 </style>
-</head>
 <body>
 
 <canvas id="stars"></canvas>
@@ -368,14 +399,24 @@ html, body {
   </div>
 
   <div class="apikey-wrap" id="apikeyWrap">
-    <div class="apikey-label">Anthropic API Key — required for AI recommendations</div>
+    <div class="apikey-label">Step 2 — Add your Anthropic API key to unlock AI features</div>
+    <div class="apikey-explainer">
+      BookDNA uses Anthropic's AI to accurately classify your books by genre and suggest what to read next.
+      You need your own free API key — it takes 2 minutes to get one and costs pennies to use.
+      <a href="https://platform.anthropic.com/api-keys" target="_blank" class="apikey-howlink">Get your free key →</a>
+    </div>
+    <div class="apikey-steps">
+      <div class="apikey-step"><span class="step-n">1</span><span>Go to <a href="https://platform.anthropic.com" target="_blank">platform.anthropic.com</a> and create a free account</span></div>
+      <div class="apikey-step"><span class="step-n">2</span><span>Click <strong>API Keys</strong> in the left sidebar, then <strong>Create Key</strong></span></div>
+      <div class="apikey-step"><span class="step-n">3</span><span>Copy the key (starts with <code>sk-ant-</code>) and paste it below</span></div>
+    </div>
     <div class="apikey-row">
       <input class="apikey-input" id="apikeyInput" type="password"
         placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-      <button class="apikey-save" onclick="saveApiKey()">Save</button>
+      <button class="apikey-save" onclick="saveApiKey()">Save Key</button>
     </div>
-    <div class="apikey-status" id="apikeyStatus">No key saved yet</div>
-    <div class="apikey-link">Get a free key at <a href="https://platform.anthropic.com/api-keys" target="_blank">platform.anthropic.com/api-keys</a> · Stored in session memory only, never sent anywhere except Anthropic</div>
+    <div class="apikey-status" id="apikeyStatus">No key saved yet — AI features will be disabled</div>
+    <div class="apikey-privacy">🔒 Your key is stored in session memory only and sent directly to Anthropic. It is never stored on a server or shared with anyone.</div>
   </div>
 </div>
 
@@ -1137,6 +1178,10 @@ async function fetchRecs(b) {
     `You are an expert book recommender. ` +
     `A reader's ${b.genre} reading history: ${titles}. ` +
     `Recommend exactly 5 books they have NOT read that deeply match their taste. ` +
+    `CRITICAL: Only recommend books you are 100% certain exist and have been published. ` +
+    `Do NOT invent titles, authors, or series. Do NOT combine real author names with fake titles. ` +
+    `If you are not completely sure a book exists, do not include it — choose a different one you are certain about. ` +
+    `Stick to well-known, widely reviewed published works only. ` +
     `Respond ONLY with a raw JSON array — no markdown, no code fences, no preamble. ` +
     `Each element: {"title":"...","author":"...","why":"one sentence why they will love it"}`;
 
