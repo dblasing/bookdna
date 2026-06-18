@@ -197,6 +197,11 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 
 ## Changelog
 
+### v4.1 — Hallucination guard on recommendations
+
+- **Fixed:** Recommendation prompt now explicitly instructs the model to only suggest books it is 100% certain exist and have been published. Invented titles, fake author/title combinations, and uncertain books are explicitly forbidden. The model is directed to stick to well-known, widely reviewed works only.
+- **Note:** This significantly reduces but does not fully eliminate hallucinations — LLMs can still occasionally confuse real books. Always verify an unfamiliar recommendation on Goodreads before adding it to your list.
+
 ### v4.0 — API key input + AI-powered genre classification
 
 - **Added:** API key input on the landing page — paste your `sk-ant-…` key, hit Save or Enter. Stored in `sessionStorage` only (gone when you close the tab, never sent anywhere except Anthropic). Included as `x-api-key` in every API call.
