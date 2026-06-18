@@ -134,16 +134,23 @@ Each bubble renders in layers: glow halo → orbit ring → radial gradient fill
 
 The panel slides open by transitioning `width` from `0` to `360px` via CSS. `fitCanvas()` is called with a 340ms delay (matching the CSS transition duration) so the canvas resizes after the panel is fully open, not during the animation.
 
-### AI recommendations (Anthropic API)
+### AI recommendations and genre classification (Anthropic API)
 
-`fetchRecs()` calls the Anthropic Messages API directly from the browser. Two headers are required:
+Both AI features require an Anthropic API key entered on the landing page. The key is stored in `sessionStorage` and included as `x-api-key` in every request. Get a key at [platform.anthropic.com/api-keys](https://platform.anthropic.com/api-keys).
+
+**Genre classification** runs once after CSV parsing, using `claude-haiku-4-5-20251001`:
 
 ```js
+'x-api-key': key,
 'anthropic-version': '2023-06-01',
 'anthropic-dangerous-direct-browser-access': 'true',
 ```
 
-The prompt instructs the model to return a raw JSON array with no markdown fencing. The parser defensively extracts the substring from the first `[` to the last `]`, tolerating any preamble. On error, the actual error message is shown in the panel UI — not a generic failure string.
+All books are sent in a single batch prompt asking the model to return a JSON object mapping book index → genre label. Haiku is used here for speed and cost (~$0.01 for 350 books).
+
+**Recommendations** run per genre click, using `claude-sonnet-4-6` for higher quality results. The prompt sends up to 12 of the user's books in that genre and asks for 5 recommendations as a raw JSON array.
+
+Both parsers defensively extract JSON by finding the first `[` or `{` and last `]` or `}`, tolerating any preamble. Errors surface as readable messages in the UI.
 
 ---
 
@@ -189,6 +196,15 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 ---
 
 ## Changelog
+
+### v4.0 — API key input + AI-powered genre classification
+
+- **Added:** API key input on the landing page — paste your `sk-ant-…` key, hit Save or Enter. Stored in `sessionStorage` only (gone when you close the tab, never sent anywhere except Anthropic). Included as `x-api-key` in every API call.
+- **Added:** AI genre classification — when a key is present, a single batch call to `claude-haiku-4-5-20251001` classifies every book by title and author into the correct genre. The model knows what *The Martian*, *Shoe Dog*, and *Sapiens* actually are; keyword matching does not. Cost is roughly $0.01 for a 350-book library.
+- **Added:** Keyword fallback — if no API key is entered, the keyword dictionary still runs so the map renders without a key.
+- **Fixed:** Recommendations now show a clear "enter your API key" prompt instead of a cryptic `x-api-key header is required` error.
+- **Changed:** `colorForGenre()` now looks up color from a central `GENRE_COLORS` map rather than embedding color inside the keyword dict.
+- **Changed:** Classification uses Haiku (fast, cheap); recommendations use Sonnet (higher quality).
 
 ### v3.0 — Ground-up rewrite: layout, interactions, reliability
 
