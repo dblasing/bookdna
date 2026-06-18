@@ -383,6 +383,18 @@ html, body {
   flex-shrink: 0; margin-top: 1px;
 }
 .apikey-privacy { font-size: .7rem; color: var(--dim); line-height: 1.5; }
+.btn-refresh {
+  background: transparent;
+  border: 1px solid rgba(0,212,180,.25);
+  color: var(--teal);
+  padding: .3rem .75rem;
+  border-radius: 50px; font-size: .7rem;
+  cursor: pointer; font-family: inherit;
+  transition: background .2s, border-color .2s;
+  white-space: nowrap;
+}
+.btn-refresh:hover { background: rgba(0,212,180,.08); border-color: var(--teal); }
+.btn-refresh:disabled { opacity: .4; cursor: not-allowed; }
 </style>
 <body>
 
@@ -1099,6 +1111,7 @@ function onWheel(e) {
 ════════════════════════════════════════ */
 function openPanel(b) {
   selGenre = b.genre;
+  currentPanelBubble = b;
   document.getElementById('panel').classList.add('open');
   renderPanel(b);
   // Resize canvas after panel animation completes
@@ -1107,6 +1120,7 @@ function openPanel(b) {
 
 function closePanel() {
   selGenre = null;
+  currentPanelBubble = null;
   document.getElementById('panel').classList.remove('open');
   setTimeout(() => { fitCanvas(); }, 340);
 }
@@ -1153,7 +1167,10 @@ function renderPanel(b) {
     <div class="sec-lbl">Your reads</div>
     ${bookChips}${overflow}
     <div class="divider"></div>
-    <div class="sec-lbl">AI recommendations</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+      <div class="sec-lbl" style="margin-bottom:0">AI recommendations</div>
+      <button class="btn-refresh" id="recRefreshBtn" onclick="refreshRecs()">↻ New suggestions</button>
+    </div>
     <div id="recArea">
       <div class="rec-spinner">
         <span class="spinner">◌</span>
@@ -1168,6 +1185,24 @@ function renderPanel(b) {
 /* ════════════════════════════════════════
    AI RECOMMENDATIONS
 ════════════════════════════════════════ */
+let currentPanelBubble = null;
+
+function refreshRecs() {
+  if (!currentPanelBubble) return;
+  const btn = document.getElementById('recRefreshBtn');
+  if (btn) btn.disabled = true;
+  const area = document.getElementById('recArea');
+  if (area) area.innerHTML = `
+    <div class="rec-spinner">
+      <span class="spinner">◌</span>
+      <span>Getting new suggestions<span class="dots"></span></span>
+    </div>`;
+  fetchRecs(currentPanelBubble).then(() => {
+    const btn = document.getElementById('recRefreshBtn');
+    if (btn) btn.disabled = false;
+  });
+}
+window.refreshRecs = refreshRecs;
 async function fetchRecs(b) {
   const key = getApiKey();
   if (!key) {
