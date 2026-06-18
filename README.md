@@ -197,6 +197,13 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 
 ## Changelog
 
+### v4.4 — Fix JSON truncation on large genres
+
+- **Fixed:** Genres with many books (e.g. History) were returning "unexpected format" errors because the response JSON was being cut off mid-array. Root cause: `max_tokens` was set to 1024, which wasn't enough room for 5 recommendations plus any preamble.
+- **Fixed:** Bumped `max_tokens` from 1024 to 2048 on recommendation calls.
+- **Improved:** Exclusion list in the prompt trimmed to titles only (no authors) to reduce prompt size and leave more room for the response.
+- **Note:** The JS dedup filter from v4.3 remains the safety net — already-read books still cannot appear even with a shorter exclusion list in the prompt.
+
 ### v4.3 — Guaranteed client-side dedup of already-read books
 
 - **Fixed:** Magpie Murders and other already-read books were still occasionally appearing in recommendations even after v4.2. Root cause: with 300+ books in the exclusion list, the model would miss entries buried in a long prompt.
