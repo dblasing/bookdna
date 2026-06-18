@@ -197,6 +197,10 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 
 ## Changelog
 
+### v4.2 — Exclude full reading list from recommendations
+
+- **Fixed:** Recommendations were suggesting books the user had already read (e.g. *The Sanatorium*, *The Magpie Murders*) because the prompt only sent books from the clicked genre, not the full library. The prompt now sends the user's complete reading list as an explicit exclusion list so the model cannot suggest any book already read, regardless of which genre it was filed under.
+
 ### v4.1 — Hallucination guard on recommendations
 
 - **Fixed:** Recommendation prompt now explicitly instructs the model to only suggest books it is 100% certain exist and have been published. Invented titles, fake author/title combinations, and uncertain books are explicitly forbidden. The model is directed to stick to well-known, widely reviewed works only.
