@@ -310,79 +310,6 @@ html, body {
 }
 .err-box strong { color: #E8526A; }
 
-/* ── API KEY INPUT ── */
-.apikey-wrap {
-  margin-top: 1.4rem;
-  max-width: 480px; width: 100%;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  padding: 1rem 1.25rem;
-  display: flex; flex-direction: column; gap: .5rem;
-}
-.apikey-wrap.keyset {
-  border-color: rgba(0,212,180,.3);
-  background: rgba(0,212,180,.04);
-}
-.apikey-label {
-  font-size: .7rem; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--dim);
-}
-.apikey-row { display: flex; gap: .5rem; align-items: center; }
-.apikey-input {
-  flex: 1; background: rgba(0,0,0,.3);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; padding: .5rem .75rem;
-  color: var(--text); font-size: .82rem; font-family: 'Inter', sans-serif;
-  outline: none; transition: border-color .2s;
-}
-.apikey-input:focus { border-color: var(--teal); }
-.apikey-input::placeholder { color: var(--dim); }
-.apikey-save {
-  background: var(--teal); color: #040A0D;
-  border: none; border-radius: 8px;
-  padding: .5rem .9rem; font-size: .78rem; font-weight: 600;
-  cursor: pointer; white-space: nowrap; transition: background .2s;
-  font-family: inherit;
-}
-.apikey-save:hover { background: #00EDD0; }
-.apikey-status { font-size: .72rem; color: var(--muted); }
-.apikey-status.ok { color: var(--teal); }
-.apikey-link { font-size: .7rem; color: var(--dim); }
-.apikey-link a { color: var(--teal); text-decoration: none; }
-.apikey-link a:hover { text-decoration: underline; }
-.apikey-explainer {
-  font-size: .8rem; color: var(--muted); line-height: 1.6;
-}
-.apikey-howlink {
-  color: var(--teal); text-decoration: none; margin-left: .35rem; white-space: nowrap;
-}
-.apikey-howlink:hover { text-decoration: underline; }
-.apikey-steps {
-  display: flex; flex-direction: column; gap: .4rem;
-  background: rgba(0,0,0,.2); border-radius: 10px;
-  padding: .75rem 1rem;
-}
-.apikey-step {
-  display: flex; align-items: flex-start; gap: .65rem;
-  font-size: .78rem; color: var(--muted); line-height: 1.5;
-}
-.apikey-step a { color: var(--teal); text-decoration: none; }
-.apikey-step a:hover { text-decoration: underline; }
-.apikey-step strong { color: var(--text); font-weight: 500; }
-.apikey-step code {
-  font-family: 'Courier New', monospace; font-size: .75rem;
-  background: rgba(255,255,255,.07); padding: .1rem .35rem;
-  border-radius: 4px; color: var(--teal);
-}
-.step-n {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: rgba(0,212,180,.15); color: var(--teal);
-  font-size: .7rem; font-weight: 600;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px;
-}
-.apikey-privacy { font-size: .7rem; color: var(--dim); line-height: 1.5; }
 .btn-refresh {
   background: transparent;
   border: 1px solid rgba(0,212,180,.25);
@@ -417,26 +344,6 @@ html, body {
     <div class="pill"><div class="pill-dot" style="background:var(--amber)"></div>AI picks your next reads</div>
   </div>
 
-  <div class="apikey-wrap" id="apikeyWrap">
-    <div class="apikey-label">Step 2 — Add your Anthropic API key to unlock AI features</div>
-    <div class="apikey-explainer">
-      BookDNA uses Anthropic's AI to accurately classify your books by genre and suggest what to read next.
-      You need your own free API key — it takes 2 minutes to get one and costs pennies to use.
-      <a href="https://platform.anthropic.com/api-keys" target="_blank" class="apikey-howlink">Get your free key →</a>
-    </div>
-    <div class="apikey-steps">
-      <div class="apikey-step"><span class="step-n">1</span><span>Go to <a href="https://platform.anthropic.com" target="_blank">platform.anthropic.com</a> and create a free account</span></div>
-      <div class="apikey-step"><span class="step-n">2</span><span>Click <strong>API Keys</strong> in the left sidebar, then <strong>Create Key</strong></span></div>
-      <div class="apikey-step"><span class="step-n">3</span><span>Copy the key (starts with <code>sk-ant-</code>) and paste it below</span></div>
-    </div>
-    <div class="apikey-row">
-      <input class="apikey-input" id="apikeyInput" type="password"
-        placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-      <button class="apikey-save" onclick="saveApiKey()">Save Key</button>
-    </div>
-    <div class="apikey-status" id="apikeyStatus">No key saved yet — AI features will be disabled</div>
-    <div class="apikey-privacy">🔒 Your key is stored in session memory only and sent directly to Anthropic. It is never stored on a server or shared with anyone.</div>
-  </div>
 </div>
 
 <!-- ANALYZING -->
@@ -518,34 +425,21 @@ html, body {
 })();
 
 /* ════════════════════════════════════════
-   API KEY
+   AI PROXY
+   The Anthropic key lives in a Cloudflare Worker (see worker/), so visitors
+   don't need their own. Set this to your deployed worker URL.
 ════════════════════════════════════════ */
-function getApiKey() { return sessionStorage.getItem('bookdna_key') || ''; }
+const PROXY_URL = 'https://bookdna-proxy.YOUR-SUBDOMAIN.workers.dev';
 
-function saveApiKey() {
-  const val = (document.getElementById('apikeyInput').value || '').trim();
-  if (!val.startsWith('sk-ant-')) {
-    setKeyStatus('Key should start with sk-ant-…', false); return;
-  }
-  sessionStorage.setItem('bookdna_key', val);
-  document.getElementById('apikeyInput').value = '';
-  document.getElementById('apikeyWrap').classList.add('keyset');
-  setKeyStatus('✓ Key saved for this session', true);
-}
-window.saveApiKey = saveApiKey;
-
-function setKeyStatus(msg, ok) {
-  const el = document.getElementById('apikeyStatus');
-  if (el) { el.textContent = msg; el.className = 'apikey-status' + (ok ? ' ok' : ''); }
-}
-
-document.getElementById('apikeyInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') saveApiKey();
-});
-
-if (getApiKey()) {
-  setKeyStatus('✓ Key saved for this session', true);
-  document.getElementById('apikeyWrap').classList.add('keyset');
+async function callProxy(path, payload) {
+  const resp = await fetch(PROXY_URL + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
 }
 
 /* ════════════════════════════════════════
@@ -571,46 +465,15 @@ function colorForGenre(g) { return GENRE_COLORS[g] || '#4B5563'; }
 
 /* AI-powered genre classification — batches all books in one API call */
 async function classifyGenresWithAI(books) {
-  const key = getApiKey();
-  if (!key) return null; // fall back to keywords
-
-  // Build a compact list: index|title|author
-  const lines = books.map((b, i) => `${i}|${b.title}|${b.author}`).join('\n');
-  const genres = Object.keys(GENRE_COLORS).join(', ');
-
-  const prompt =
-    `You are a book genre classifier. Classify each book into EXACTLY one genre from this list:\n` +
-    `${genres}\n\n` +
-    `Books (format: index|title|author):\n${lines}\n\n` +
-    `Respond ONLY with a JSON object mapping each index (as string) to the genre label. ` +
-    `No markdown, no explanation. Example: {"0":"Mystery & Thriller","1":"Biography & Memoir"}`;
-
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'x-api-key': key,
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', // fast + cheap for classification
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const { map } = await callProxy('/classify', {
+      books: books.map(b => ({ title: b.title, author: b.author })),
     });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const raw = (data.content || []).map(c => c.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
-    if (s < 0 || e < 0) return null;
-    return JSON.parse(clean.slice(s, e + 1));
-  } catch (_) { return null; }
+    return map || null;
+  } catch (_) { return null; } // fall back to keywords
 }
 
-/* Keyword fallback (used when no API key or classification fails) */
+/* Keyword fallback (used when AI classification fails) */
 const GENRE_KW = [
   ['science fiction','Sci-Fi & Speculative'],['sci-fi','Sci-Fi & Speculative'],
   ['speculative','Sci-Fi & Speculative'],['dystopia','Sci-Fi & Speculative'],
@@ -797,16 +660,13 @@ function analyze(csv) {
       clearInterval(tick);
       setTimeout(async () => {
         allBooks = parseCSV(csv);
-        // Try AI classification if key is present
-        if (getApiKey()) {
-          statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
-          const aiMap = await classifyGenresWithAI(allBooks);
-          if (aiMap) {
-            allBooks.forEach((b, i) => {
-              const g = aiMap[String(i)];
-              if (g && GENRE_COLORS[g]) { b.genre = g; b.color = colorForGenre(g); }
-            });
-          }
+        statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
+        const aiMap = await classifyGenresWithAI(allBooks);
+        if (aiMap) {
+          allBooks.forEach((b, i) => {
+            const g = aiMap[String(i)];
+            if (g && GENRE_COLORS[g]) { b.genre = g; b.color = colorForGenre(g); }
+          });
         }
         buildGroups();
         launchDNA();
@@ -1204,67 +1064,18 @@ function refreshRecs() {
 }
 window.refreshRecs = refreshRecs;
 async function fetchRecs(b) {
-  const key = getApiKey();
-  if (!key) {
-    const area = document.getElementById('recArea');
-    if (area) area.innerHTML = `<div class="err-box">Enter your Anthropic API key on the landing page to enable recommendations. Click <strong>↩ New Upload</strong> above to go back and add it.</div>`;
-    return;
-  }
-
   // Build a lowercase set of all read titles for guaranteed client-side dedup
   const readSet = new Set(allBooks.map(x => x.title.toLowerCase().trim()));
-
-  const titles = b.data.books
-    .slice(0, 12)
-    .map(x => `"${x.title}" by ${x.author}`)
-    .join(', ');
-
-  // Titles only for exclusion list — shorter prompt, model still gets the signal
-  const allReadTitles = allBooks.map(x => `"${x.title}"`).join(', ');
-
-  const prompt =
-    `You are an expert book recommender. ` +
-    `A reader's ${b.genre} reading history: ${titles}. ` +
-    `Books they have ALREADY READ — do NOT suggest any of these: ${allReadTitles}. ` +
-    `Recommend exactly 5 books NOT in the above list that deeply match their taste. ` +
-    `CRITICAL: Only recommend books you are 100% certain exist and have been published. ` +
-    `Do NOT invent titles, authors, or series. Do NOT combine real author names with fake titles. ` +
-    `Stick to well-known, widely reviewed published works only. ` +
-    `Respond ONLY with a raw JSON array — no markdown, no code fences, no preamble. ` +
-    `Each element: {"title":"...","author":"...","why":"one sentence why they will love it"}`;
 
   const area = () => document.getElementById('recArea');
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'x-api-key': key,
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    // Prompt is built in the worker; we only send the book data it needs
+    let { recs = [] } = await callProxy('/recommend', {
+      genre: b.genre,
+      books: b.data.books.slice(0, 12).map(x => ({ title: x.title, author: x.author })),
+      readTitles: allBooks.map(x => x.title),
     });
-
-    if (!resp.ok) {
-      const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody?.error?.message || `HTTP ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    const raw = (data.content || []).map(c => c.text || '').join('');
-
-    let recs = [];
-    try {
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const start = clean.indexOf('['), end = clean.lastIndexOf(']');
-      if (start > -1 && end > start) recs = JSON.parse(clean.slice(start, end + 1));
-    } catch (_) { recs = []; }
 
     // Hard filter — remove anything the user has already read, regardless of what the model returned
     recs = recs.filter(r => !readSet.has((r.title || '').toLowerCase().trim()));

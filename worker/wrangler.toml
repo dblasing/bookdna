@@ -1,0 +1,20 @@
+name = "bookdna-proxy"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Comma-separated list of sites allowed to call this proxy.
+ALLOWED_ORIGINS = "https://dblasing.github.io,http://localhost:8080"
+
+# 10 requests per minute per visitor IP. Classify is 1 call per upload,
+# recommend is 1 call per genre click or refresh.
+[[ratelimits]]
+name = "LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+# The API key is a secret, never in this file:
+#   npx wrangler secret put ANTHROPIC_API_KEY

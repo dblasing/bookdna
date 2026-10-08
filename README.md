@@ -57,6 +57,7 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 - **Pure HTML + CSS + JavaScript** — zero dependencies, zero build step, zero framework
 - **Canvas API** for the interactive bubble visualization with `requestAnimationFrame` render loop
 - **Anthropic Claude API** (`claude-sonnet-4-6`) for real-time book recommendations
+- **Cloudflare Worker** (`worker/`) that holds the Anthropic API key, so visitors don't need their own
 - **GitHub Pages** for hosting
 
 ---
@@ -85,8 +86,11 @@ BookDNA is intentionally a single HTML file (`index.html`). All styles, logic, v
 
 ```
 bookdna/
-├── index.html      # The entire application
-└── README.md       # This file
+├── index.html          # The entire application
+├── worker/
+│   ├── worker.js       # Cloudflare Worker proxy that holds the API key
+│   └── wrangler.toml   # Worker config: allowed origins, rate limit
+└── README.md           # This file
 ```
 
 ### View system
@@ -136,19 +140,32 @@ The panel slides open by transitioning `width` from `0` to `360px` via CSS. `fit
 
 ### AI recommendations and genre classification (Anthropic API)
 
-Both AI features require an Anthropic API key entered on the landing page. The key is stored in `sessionStorage` and included as `x-api-key` in every request. Get a key at [platform.anthropic.com/api-keys](https://platform.anthropic.com/api-keys).
+Visitors don't need an API key. The browser calls a small Cloudflare Worker (`worker/worker.js`), and the worker calls Anthropic with a key stored as a Worker secret. The key is never in the repo or the page.
 
-**Genre classification** runs once after CSV parsing, using `claude-haiku-4-5-20251001`:
+The browser sends book data only (titles, authors, genre). The prompts are built inside the worker, so the endpoint can classify and recommend books and nothing else. Someone who finds the URL can't use it as a free general-purpose Claude endpoint.
 
-```js
-'x-api-key': key,
-'anthropic-version': '2023-06-01',
-'anthropic-dangerous-direct-browser-access': 'true',
+Guards in the worker:
+
+- Only requests from the origins in `ALLOWED_ORIGINS` are accepted (`https://dblasing.github.io` and `http://localhost:8080`)
+- 10 requests per minute per visitor IP, using Cloudflare's rate limiting binding
+- Input caps: 1,500 books per classify call, 12 books per recommend call, 200 characters per title or author
+- Genre must be one of the 25 known genres
+
+Set a monthly spend limit on the key's workspace in the Anthropic console as the hard ceiling on cost.
+
+**Genre classification** runs once after CSV parsing: `POST /classify`, using `claude-haiku-4-5-20251001`. All books go in a single batch prompt asking for a JSON object mapping book index to genre label. `max_tokens` scales with library size (about 14 per book). If the call fails, the keyword classifier runs instead.
+
+**Recommendations** run per genre click: `POST /recommend`, using `claude-sonnet-4-6`. The prompt sends up to 12 of the user's books in that genre plus every title they've read as an exclusion list, and asks for 5 recommendations as a raw JSON array.
+
+### Deploying the worker
+
+One time, from the repo root (needs a free Cloudflare account):
+
+```bash
+cd worker && npx wrangler login && npx wrangler secret put ANTHROPIC_API_KEY && npx wrangler deploy
 ```
 
-All books are sent in a single batch prompt asking the model to return a JSON object mapping book index → genre label. Haiku is used here for speed and cost (~$0.01 for 350 books).
-
-**Recommendations** run per genre click, using `claude-sonnet-4-6` for higher quality results. The prompt sends up to 12 of the user's books in that genre and asks for 5 recommendations as a raw JSON array.
+`wrangler deploy` prints the worker URL. Put it in `PROXY_URL` near the top of the script in `index.html`. To change allowed origins or the rate limit, edit `wrangler.toml` and run `npx wrangler deploy` again.
 
 Both parsers defensively extract JSON by finding the first `[` or `{` and last `]` or `}`, tolerating any preamble. Errors surface as readable messages in the UI.
 
@@ -191,11 +208,18 @@ Books not matching any keyword are grouped under **General Fiction**.
 
 ## Privacy
 
-Your Goodreads data never leaves your browser. The CSV is parsed entirely client-side in JavaScript. The only outbound network request is to the Anthropic API to generate recommendations — it receives your genre label and a list of book titles and authors, nothing else.
+Your Goodreads data never leaves your browser. The CSV is parsed entirely client-side in JavaScript. The only outbound requests go to the BookDNA worker, which passes book titles, authors, and genre labels to the Anthropic API for classification and recommendations. Nothing else leaves the browser, and the worker doesn't store anything.
 
 ---
 
 ## Changelog
+
+### v4.6 — No API key needed
+
+- **Changed:** Visitors no longer paste their own Anthropic API key. AI classification and recommendations go through a Cloudflare Worker (`worker/`) that holds one key as a secret.
+- **Added:** `worker/worker.js` builds the prompts server-side from book data, so the endpoint only does BookDNA's two jobs. Origin allowlist, 10 requests per minute per IP, and input size caps.
+- **Removed:** The API key section on the landing page and the `sessionStorage` key handling.
+- **Changed:** Classification `max_tokens` now scales with library size instead of a fixed 4096, so big libraries don't get truncated JSON.
 
 ### v4.5 — Refresh button for AI recommendations
 
