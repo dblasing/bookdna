@@ -426,10 +426,10 @@ html, body {
 
 /* ════════════════════════════════════════
    AI PROXY
-   The Anthropic key lives in a Cloudflare Worker (see worker/), so visitors
-   don't need their own. Set this to your deployed worker URL.
+   The Anthropic key lives in the danielblasingame.com worker, so visitors
+   don't need their own. Code: dblasing/danielblasingame.com src/worker.js
 ════════════════════════════════════════ */
-const PROXY_URL = 'https://bookdna-proxy.YOUR-SUBDOMAIN.workers.dev';
+const PROXY_URL = 'https://danielblasingame.com/book-dna/api';
 
 async function callProxy(path, payload) {
   const resp = await fetch(PROXY_URL + path, {
