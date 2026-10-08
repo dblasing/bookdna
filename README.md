@@ -25,7 +25,7 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 
 ## How to use it
 
-### Step 1 — Export your Goodreads library
+### Step 1 — Export your Goodreads library, Libby timeline, or both
 
 1. Sign in at [goodreads.com](https://www.goodreads.com)
 2. Go to **My Books**
@@ -33,10 +33,12 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 4. Click **Export Library** and wait for the file to generate
 5. Download the `.csv` file to your machine
 
+For Libby: tap **Shelf**, then **Timeline**, then **Actions → Export Timeline** and pick **Spreadsheet**. You get a file like `libbytimeline-all-loans.csv`.
+
 ### Step 2 — Upload to BookDNA
 
-1. Open [dblasing.github.io/bookdna](https://dblasing.github.io/bookdna)
-2. Drag and drop your `.csv` onto the upload zone, or click **Choose File**
+1. Open [danielblasingame.com/book-dna](https://danielblasingame.com/book-dna/)
+2. Drag and drop your `.csv` onto the upload zone, or click **Choose File**. Select both files at once to combine Goodreads and Libby into one map.
 3. BookDNA analyzes your library and renders the map (a few seconds)
 
 ### Step 3 — Explore your map
@@ -57,7 +59,8 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 - **Pure HTML + CSS + JavaScript** — zero dependencies, zero build step, zero framework
 - **Canvas API** for the interactive bubble visualization with `requestAnimationFrame` render loop
 - **Anthropic Claude API** (`claude-sonnet-4-6`) for real-time book recommendations
-- **GitHub Pages** for hosting
+- **Cloudflare Worker** on danielblasingame.com that holds the Anthropic API key, so visitors don't need their own
+- Hosted at [danielblasingame.com/book-dna](https://danielblasingame.com/book-dna/) and on GitHub Pages
 
 ---
 
@@ -136,19 +139,26 @@ The panel slides open by transitioning `width` from `0` to `360px` via CSS. `fit
 
 ### AI recommendations and genre classification (Anthropic API)
 
-Both AI features require an Anthropic API key entered on the landing page. The key is stored in `sessionStorage` and included as `x-api-key` in every request. Get a key at [platform.anthropic.com/api-keys](https://platform.anthropic.com/api-keys).
+Visitors don't need an API key. The browser calls `https://danielblasingame.com/book-dna/api/*`, served by the Cloudflare Worker in [dblasing/danielblasingame.com](https://github.com/dblasing/danielblasingame.com) (`src/worker.js`). That worker calls Anthropic with a key stored as a Worker secret. The key is never in the repo or the page.
 
-**Genre classification** runs once after CSV parsing, using `claude-haiku-4-5-20251001`:
+The browser sends book data only (titles, authors, genre). The prompts are built inside the worker, so the endpoint can classify and recommend books and nothing else. Someone who finds the URL can't use it as a free general-purpose Claude endpoint.
 
-```js
-'x-api-key': key,
-'anthropic-version': '2023-06-01',
-'anthropic-dangerous-direct-browser-access': 'true',
-```
+Guards in the worker:
 
-All books are sent in a single batch prompt asking the model to return a JSON object mapping book index → genre label. Haiku is used here for speed and cost (~$0.01 for 350 books).
+- Only requests from the origins in `ALLOWED_ORIGINS` are accepted (danielblasingame.com, www.danielblasingame.com, dblasing.github.io)
+- 10 requests per minute per visitor IP, using Cloudflare's rate limiting binding
+- Input caps: 1,500 books per classify call, 12 books per recommend call, 200 characters per title or author
+- Genre must be one of the 25 known genres
 
-**Recommendations** run per genre click, using `claude-sonnet-4-6` for higher quality results. The prompt sends up to 12 of the user's books in that genre and asks for 5 recommendations as a raw JSON array.
+Set a monthly spend limit on the key's workspace in the Anthropic console as the hard ceiling on cost.
+
+**Genre classification** runs once after CSV parsing: `POST /classify`, using `claude-haiku-4-5-20251001`. All books go in a single batch prompt asking for a JSON object mapping book index to genre label. `max_tokens` scales with library size (about 14 per book). If the call fails, the keyword classifier runs instead.
+
+**Recommendations** run per genre click: `POST /recommend`, using `claude-sonnet-4-6`. The prompt sends up to 12 of the user's books in that genre plus every title they've read as an exclusion list, and asks for 5 recommendations as a raw JSON array.
+
+### Deploying
+
+The worker deploys with the danielblasingame.com repo (push to `main`). The key is set once there with `npx wrangler secret put ANTHROPIC_API_KEY`. To update the copy on danielblasingame.com, copy `index.html` to `public/book-dna/index.html` in that repo and push.
 
 Both parsers defensively extract JSON by finding the first `[` or `{` and last `]` or `}`, tolerating any preamble. Errors surface as readable messages in the UI.
 
@@ -191,11 +201,24 @@ Books not matching any keyword are grouped under **General Fiction**.
 
 ## Privacy
 
-Your Goodreads data never leaves your browser. The CSV is parsed entirely client-side in JavaScript. The only outbound network request is to the Anthropic API to generate recommendations — it receives your genre label and a list of book titles and authors, nothing else.
+Your Goodreads data never leaves your browser. The CSV is parsed entirely client-side in JavaScript. The only outbound requests go to the BookDNA API on danielblasingame.com, which passes book titles, authors, and genre labels to the Anthropic API for classification and recommendations. Nothing else leaves the browser, and the worker doesn't store anything.
 
 ---
 
 ## Changelog
+
+### v4.7 — Libby import
+
+- **Added:** Libby timeline exports (`cover,title,author,publisher,isbn,timestamp,activity,details,library`) are detected by their headers. Holds are skipped and repeat loans count once.
+- **Added:** Drop a Goodreads export and a Libby export together and they merge into one map. A book in both is matched by title (ignoring series tags, subtitles, and a leading "The") plus at least one shared author name (accents folded, so "Nesbø" matches "Nesbo"). The Goodreads copy wins because it carries your rating and page count.
+- **Changed:** Landing page copy and upload hints cover both sources.
+
+### v4.6 — No API key needed
+
+- **Changed:** Visitors no longer paste their own Anthropic API key. AI classification and recommendations go through the danielblasingame.com Cloudflare Worker, which holds one key as a secret.
+- **Added:** The worker builds the prompts server-side from book data, so the endpoint only does BookDNA's two jobs. Origin allowlist, 10 requests per minute per IP, and input size caps.
+- **Removed:** The API key section on the landing page and the `sessionStorage` key handling.
+- **Changed:** Classification `max_tokens` now scales with library size instead of a fixed 4096, so big libraries don't get truncated JSON.
 
 ### v4.5 — Refresh button for AI recommendations
 

@@ -310,79 +310,6 @@ html, body {
 }
 .err-box strong { color: #E8526A; }
 
-/* ── API KEY INPUT ── */
-.apikey-wrap {
-  margin-top: 1.4rem;
-  max-width: 480px; width: 100%;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 14px;
-  padding: 1rem 1.25rem;
-  display: flex; flex-direction: column; gap: .5rem;
-}
-.apikey-wrap.keyset {
-  border-color: rgba(0,212,180,.3);
-  background: rgba(0,212,180,.04);
-}
-.apikey-label {
-  font-size: .7rem; font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--dim);
-}
-.apikey-row { display: flex; gap: .5rem; align-items: center; }
-.apikey-input {
-  flex: 1; background: rgba(0,0,0,.3);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; padding: .5rem .75rem;
-  color: var(--text); font-size: .82rem; font-family: 'Inter', sans-serif;
-  outline: none; transition: border-color .2s;
-}
-.apikey-input:focus { border-color: var(--teal); }
-.apikey-input::placeholder { color: var(--dim); }
-.apikey-save {
-  background: var(--teal); color: #040A0D;
-  border: none; border-radius: 8px;
-  padding: .5rem .9rem; font-size: .78rem; font-weight: 600;
-  cursor: pointer; white-space: nowrap; transition: background .2s;
-  font-family: inherit;
-}
-.apikey-save:hover { background: #00EDD0; }
-.apikey-status { font-size: .72rem; color: var(--muted); }
-.apikey-status.ok { color: var(--teal); }
-.apikey-link { font-size: .7rem; color: var(--dim); }
-.apikey-link a { color: var(--teal); text-decoration: none; }
-.apikey-link a:hover { text-decoration: underline; }
-.apikey-explainer {
-  font-size: .8rem; color: var(--muted); line-height: 1.6;
-}
-.apikey-howlink {
-  color: var(--teal); text-decoration: none; margin-left: .35rem; white-space: nowrap;
-}
-.apikey-howlink:hover { text-decoration: underline; }
-.apikey-steps {
-  display: flex; flex-direction: column; gap: .4rem;
-  background: rgba(0,0,0,.2); border-radius: 10px;
-  padding: .75rem 1rem;
-}
-.apikey-step {
-  display: flex; align-items: flex-start; gap: .65rem;
-  font-size: .78rem; color: var(--muted); line-height: 1.5;
-}
-.apikey-step a { color: var(--teal); text-decoration: none; }
-.apikey-step a:hover { text-decoration: underline; }
-.apikey-step strong { color: var(--text); font-weight: 500; }
-.apikey-step code {
-  font-family: 'Courier New', monospace; font-size: .75rem;
-  background: rgba(255,255,255,.07); padding: .1rem .35rem;
-  border-radius: 4px; color: var(--teal);
-}
-.step-n {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: rgba(0,212,180,.15); color: var(--teal);
-  font-size: .7rem; font-weight: 600;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px;
-}
-.apikey-privacy { font-size: .7rem; color: var(--dim); line-height: 1.5; }
 .btn-refresh {
   background: transparent;
   border: 1px solid rgba(0,212,180,.25);
@@ -403,13 +330,13 @@ html, body {
 <!-- LANDING -->
 <div class="view" id="vLanding">
   <div class="mark">BookDNA<sup>™</sup></div>
-  <p class="tagline">Upload your Goodreads reading history and discover the genetic code of your literary taste — an interactive map of every genre you've ever loved.</p>
+  <p class="tagline">Upload your Goodreads or Libby reading history and discover the genetic code of your literary taste — an interactive map of every genre you've ever loved.</p>
   <div class="dropzone" id="dropzone">
     <span class="dz-icon">📚</span>
-    <div class="dz-title">Drop your Goodreads export here</div>
-    <div class="dz-sub">Go to Goodreads → My Books → Import &amp; Export → Export Library, then drop the .csv file here</div>
+    <div class="dz-title">Drop your Goodreads or Libby export here</div>
+    <div class="dz-sub"><strong>Goodreads:</strong> My Books → Import &amp; Export → Export Library<br><strong>Libby:</strong> Shelf → Timeline → Actions → Export Timeline → Spreadsheet<br>Drop one file, or both together to combine them</div>
     <button class="btn-teal" id="chooseBtn">Choose File</button>
-    <input type="file" id="fileInput" accept=".csv">
+    <input type="file" id="fileInput" accept=".csv" multiple>
   </div>
   <div class="pills">
     <div class="pill"><div class="pill-dot" style="background:var(--teal)"></div>Maps every genre you've read</div>
@@ -417,26 +344,6 @@ html, body {
     <div class="pill"><div class="pill-dot" style="background:var(--amber)"></div>AI picks your next reads</div>
   </div>
 
-  <div class="apikey-wrap" id="apikeyWrap">
-    <div class="apikey-label">Step 2 — Add your Anthropic API key to unlock AI features</div>
-    <div class="apikey-explainer">
-      BookDNA uses Anthropic's AI to accurately classify your books by genre and suggest what to read next.
-      You need your own free API key — it takes 2 minutes to get one and costs pennies to use.
-      <a href="https://platform.anthropic.com/api-keys" target="_blank" class="apikey-howlink">Get your free key →</a>
-    </div>
-    <div class="apikey-steps">
-      <div class="apikey-step"><span class="step-n">1</span><span>Go to <a href="https://platform.anthropic.com" target="_blank">platform.anthropic.com</a> and create a free account</span></div>
-      <div class="apikey-step"><span class="step-n">2</span><span>Click <strong>API Keys</strong> in the left sidebar, then <strong>Create Key</strong></span></div>
-      <div class="apikey-step"><span class="step-n">3</span><span>Copy the key (starts with <code>sk-ant-</code>) and paste it below</span></div>
-    </div>
-    <div class="apikey-row">
-      <input class="apikey-input" id="apikeyInput" type="password"
-        placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-      <button class="apikey-save" onclick="saveApiKey()">Save Key</button>
-    </div>
-    <div class="apikey-status" id="apikeyStatus">No key saved yet — AI features will be disabled</div>
-    <div class="apikey-privacy">🔒 Your key is stored in session memory only and sent directly to Anthropic. It is never stored on a server or shared with anyone.</div>
-  </div>
 </div>
 
 <!-- ANALYZING -->
@@ -518,34 +425,21 @@ html, body {
 })();
 
 /* ════════════════════════════════════════
-   API KEY
+   AI PROXY
+   The Anthropic key lives in the danielblasingame.com worker, so visitors
+   don't need their own. Code: dblasing/danielblasingame.com src/worker.js
 ════════════════════════════════════════ */
-function getApiKey() { return sessionStorage.getItem('bookdna_key') || ''; }
+const PROXY_URL = 'https://danielblasingame.com/book-dna/api';
 
-function saveApiKey() {
-  const val = (document.getElementById('apikeyInput').value || '').trim();
-  if (!val.startsWith('sk-ant-')) {
-    setKeyStatus('Key should start with sk-ant-…', false); return;
-  }
-  sessionStorage.setItem('bookdna_key', val);
-  document.getElementById('apikeyInput').value = '';
-  document.getElementById('apikeyWrap').classList.add('keyset');
-  setKeyStatus('✓ Key saved for this session', true);
-}
-window.saveApiKey = saveApiKey;
-
-function setKeyStatus(msg, ok) {
-  const el = document.getElementById('apikeyStatus');
-  if (el) { el.textContent = msg; el.className = 'apikey-status' + (ok ? ' ok' : ''); }
-}
-
-document.getElementById('apikeyInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') saveApiKey();
-});
-
-if (getApiKey()) {
-  setKeyStatus('✓ Key saved for this session', true);
-  document.getElementById('apikeyWrap').classList.add('keyset');
+async function callProxy(path, payload) {
+  const resp = await fetch(PROXY_URL + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
 }
 
 /* ════════════════════════════════════════
@@ -571,46 +465,15 @@ function colorForGenre(g) { return GENRE_COLORS[g] || '#4B5563'; }
 
 /* AI-powered genre classification — batches all books in one API call */
 async function classifyGenresWithAI(books) {
-  const key = getApiKey();
-  if (!key) return null; // fall back to keywords
-
-  // Build a compact list: index|title|author
-  const lines = books.map((b, i) => `${i}|${b.title}|${b.author}`).join('\n');
-  const genres = Object.keys(GENRE_COLORS).join(', ');
-
-  const prompt =
-    `You are a book genre classifier. Classify each book into EXACTLY one genre from this list:\n` +
-    `${genres}\n\n` +
-    `Books (format: index|title|author):\n${lines}\n\n` +
-    `Respond ONLY with a JSON object mapping each index (as string) to the genre label. ` +
-    `No markdown, no explanation. Example: {"0":"Mystery & Thriller","1":"Biography & Memoir"}`;
-
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'x-api-key': key,
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', // fast + cheap for classification
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const { map } = await callProxy('/classify', {
+      books: books.map(b => ({ title: b.title, author: b.author })),
     });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const raw = (data.content || []).map(c => c.text || '').join('');
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const s = clean.indexOf('{'), e = clean.lastIndexOf('}');
-    if (s < 0 || e < 0) return null;
-    return JSON.parse(clean.slice(s, e + 1));
-  } catch (_) { return null; }
+    return map || null;
+  } catch (_) { return null; } // fall back to keywords
 }
 
-/* Keyword fallback (used when no API key or classification fails) */
+/* Keyword fallback (used when AI classification fails) */
 const GENRE_KW = [
   ['science fiction','Sci-Fi & Speculative'],['sci-fi','Sci-Fi & Speculative'],
   ['speculative','Sci-Fi & Speculative'],['dystopia','Sci-Fi & Speculative'],
@@ -699,16 +562,18 @@ function parseCSVLine(line) {
 }
 
 function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) return [];
   const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').toLowerCase());
   const col = name => headers.findIndex(h => h.includes(name));
+  // Libby timeline export: cover,title,author,publisher,isbn,timestamp,activity,details,library
+  const isLibby = headers.includes('activity') && headers.includes('timestamp');
   const iTitle  = col('title');
   const iAuthor = col('author');
   const iRating = col('my rating');
   const iShelves = col('bookshelves');
   const iPages  = col('number of pages');
-  const iShelf  = col('exclusive shelf');
+  const iActivity = col('activity');
 
   const books = [];
   for (let i = 1; i < lines.length; i++) {
@@ -716,13 +581,48 @@ function parseCSV(text) {
     const title = (c[iTitle] || '').replace(/^"|"$/g, '').trim();
     if (!title) continue;
     const author  = (c[iAuthor]  || '').replace(/^"|"$/g, '').trim();
-    const rating  = parseInt(c[iRating]) || 0;
-    const shelves = (c[iShelves] || '').replace(/^"|"$/g, '').trim();
-    const pages   = parseInt(c[iPages]) || 0;
+    if (isLibby) {
+      // Holds aren't reads. Re-borrows repeat a book; parseAll() dedups those.
+      if (/hold/i.test(c[iActivity] || '')) continue;
+    }
+    const rating  = isLibby ? 0 : parseInt(c[iRating]) || 0;
+    const shelves = isLibby ? '' : (c[iShelves] || '').replace(/^"|"$/g, '').trim();
+    const pages   = isLibby ? 0 : parseInt(c[iPages]) || 0;
     const genre = keywordGenre(title, author, shelves);
     books.push({ title, author, rating, pages, genre, color: colorForGenre(genre) });
   }
   return books;
+}
+
+/* Matching the same book across exports. Goodreads adds "(Series, #2)", Libby
+   drops a leading "The" or adds a subtitle, and authors differ in accents,
+   order ("Liu Cixin"), and co-authors. So: same title, and at least one
+   author name in common. */
+const fold = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ø/g, 'o');
+function titleKey(title) {
+  return fold(title).replace(/\(.*?\)/g, '').split(':')[0]
+    .replace(/^\s*(the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
+}
+function authorWords(author) {
+  return new Set(fold(author).split(/[^a-z]+/).filter(w => w.length > 2));
+}
+
+/* Merge several exports. When a book shows up twice, keep the copy that knows
+   more (Goodreads has your rating and page count, Libby has neither). */
+function parseAll(texts) {
+  const byTitle = new Map(), out = [];
+  const score = b => (b.rating ? 2 : 0) + (b.pages ? 1 : 0);
+  texts.flatMap(parseCSV).forEach(b => {
+    const t = titleKey(b.title), aw = authorWords(b.author);
+    const same = (byTitle.get(t) || []).find(x => [...aw].some(w => x.aw.has(w)));
+    if (!same) {
+      const entry = { aw, idx: out.push(b) - 1 };
+      byTitle.set(t, [...(byTitle.get(t) || []), entry]);
+    } else if (score(b) > score(out[same.idx])) {
+      out[same.idx] = b;
+    }
+  });
+  return out;
 }
 
 /* ════════════════════════════════════════
@@ -755,21 +655,19 @@ document.getElementById('chooseBtn').addEventListener('click', e => {
   fi.click();
 });
 fi.addEventListener('change', e => {
-  if (e.target.files[0]) loadFile(e.target.files[0]);
+  if (e.target.files.length) loadFiles(e.target.files);
 });
 dz.addEventListener('click', () => fi.click());
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
 dz.addEventListener('drop', e => {
   e.preventDefault(); dz.classList.remove('over');
-  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
 });
 
-function loadFile(file) {
+function loadFiles(files) {
   showView('vAnalyzing');
-  const reader = new FileReader();
-  reader.onload = e => analyze(e.target.result);
-  reader.readAsText(file);
+  Promise.all([...files].map(f => f.text())).then(analyze);
 }
 
 const SEQ_MSGS = [
@@ -781,7 +679,7 @@ const SEQ_MSGS = [
   'Rendering your BookDNA',
 ];
 
-function analyze(csv) {
+function analyze(texts) {
   let pct = 0, step = 0;
   const ring = document.getElementById('progressRing');
   const pctEl = document.getElementById('progressPct');
@@ -796,17 +694,14 @@ function analyze(csv) {
     if (pct >= 100) {
       clearInterval(tick);
       setTimeout(async () => {
-        allBooks = parseCSV(csv);
-        // Try AI classification if key is present
-        if (getApiKey()) {
-          statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
-          const aiMap = await classifyGenresWithAI(allBooks);
-          if (aiMap) {
-            allBooks.forEach((b, i) => {
-              const g = aiMap[String(i)];
-              if (g && GENRE_COLORS[g]) { b.genre = g; b.color = colorForGenre(g); }
-            });
-          }
+        allBooks = parseAll(texts);
+        statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
+        const aiMap = await classifyGenresWithAI(allBooks);
+        if (aiMap) {
+          allBooks.forEach((b, i) => {
+            const g = aiMap[String(i)];
+            if (g && GENRE_COLORS[g]) { b.genre = g; b.color = colorForGenre(g); }
+          });
         }
         buildGroups();
         launchDNA();
@@ -1204,67 +1099,18 @@ function refreshRecs() {
 }
 window.refreshRecs = refreshRecs;
 async function fetchRecs(b) {
-  const key = getApiKey();
-  if (!key) {
-    const area = document.getElementById('recArea');
-    if (area) area.innerHTML = `<div class="err-box">Enter your Anthropic API key on the landing page to enable recommendations. Click <strong>↩ New Upload</strong> above to go back and add it.</div>`;
-    return;
-  }
-
   // Build a lowercase set of all read titles for guaranteed client-side dedup
   const readSet = new Set(allBooks.map(x => x.title.toLowerCase().trim()));
-
-  const titles = b.data.books
-    .slice(0, 12)
-    .map(x => `"${x.title}" by ${x.author}`)
-    .join(', ');
-
-  // Titles only for exclusion list — shorter prompt, model still gets the signal
-  const allReadTitles = allBooks.map(x => `"${x.title}"`).join(', ');
-
-  const prompt =
-    `You are an expert book recommender. ` +
-    `A reader's ${b.genre} reading history: ${titles}. ` +
-    `Books they have ALREADY READ — do NOT suggest any of these: ${allReadTitles}. ` +
-    `Recommend exactly 5 books NOT in the above list that deeply match their taste. ` +
-    `CRITICAL: Only recommend books you are 100% certain exist and have been published. ` +
-    `Do NOT invent titles, authors, or series. Do NOT combine real author names with fake titles. ` +
-    `Stick to well-known, widely reviewed published works only. ` +
-    `Respond ONLY with a raw JSON array — no markdown, no code fences, no preamble. ` +
-    `Each element: {"title":"...","author":"...","why":"one sentence why they will love it"}`;
 
   const area = () => document.getElementById('recArea');
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'x-api-key': key,
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    // Prompt is built in the worker; we only send the book data it needs
+    let { recs = [] } = await callProxy('/recommend', {
+      genre: b.genre,
+      books: b.data.books.slice(0, 12).map(x => ({ title: x.title, author: x.author })),
+      readTitles: allBooks.map(x => x.title),
     });
-
-    if (!resp.ok) {
-      const errBody = await resp.json().catch(() => ({}));
-      throw new Error(errBody?.error?.message || `HTTP ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    const raw = (data.content || []).map(c => c.text || '').join('');
-
-    let recs = [];
-    try {
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const start = clean.indexOf('['), end = clean.lastIndexOf(']');
-      if (start > -1 && end > start) recs = JSON.parse(clean.slice(start, end + 1));
-    } catch (_) { recs = []; }
 
     // Hard filter — remove anything the user has already read, regardless of what the model returned
     recs = recs.filter(r => !readSet.has((r.title || '').toLowerCase().trim()));
