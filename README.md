@@ -25,7 +25,7 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 
 ## How to use it
 
-### Step 1 — Export your Goodreads library
+### Step 1 — Export your Goodreads library, Libby timeline, or both
 
 1. Sign in at [goodreads.com](https://www.goodreads.com)
 2. Go to **My Books**
@@ -33,10 +33,12 @@ BookDNA is a single-file web app that parses your Goodreads CSV export and gener
 4. Click **Export Library** and wait for the file to generate
 5. Download the `.csv` file to your machine
 
+For Libby: tap **Shelf**, then **Timeline**, then **Actions → Export Timeline** and pick **Spreadsheet**. You get a file like `libbytimeline-all-loans.csv`.
+
 ### Step 2 — Upload to BookDNA
 
-1. Open [dblasing.github.io/bookdna](https://dblasing.github.io/bookdna)
-2. Drag and drop your `.csv` onto the upload zone, or click **Choose File**
+1. Open [danielblasingame.com/book-dna](https://danielblasingame.com/book-dna/)
+2. Drag and drop your `.csv` onto the upload zone, or click **Choose File**. Select both files at once to combine Goodreads and Libby into one map.
 3. BookDNA analyzes your library and renders the map (a few seconds)
 
 ### Step 3 — Explore your map
@@ -204,6 +206,12 @@ Your Goodreads data never leaves your browser. The CSV is parsed entirely client
 ---
 
 ## Changelog
+
+### v4.7 — Libby import
+
+- **Added:** Libby timeline exports (`cover,title,author,publisher,isbn,timestamp,activity,details,library`) are detected by their headers. Holds are skipped and repeat loans count once.
+- **Added:** Drop a Goodreads export and a Libby export together and they merge into one map. A book in both is matched by title (ignoring series tags, subtitles, and a leading "The") plus at least one shared author name (accents folded, so "Nesbø" matches "Nesbo"). The Goodreads copy wins because it carries your rating and page count.
+- **Changed:** Landing page copy and upload hints cover both sources.
 
 ### v4.6 — No API key needed
 

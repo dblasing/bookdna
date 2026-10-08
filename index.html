@@ -330,13 +330,13 @@ html, body {
 <!-- LANDING -->
 <div class="view" id="vLanding">
   <div class="mark">BookDNA<sup>™</sup></div>
-  <p class="tagline">Upload your Goodreads reading history and discover the genetic code of your literary taste — an interactive map of every genre you've ever loved.</p>
+  <p class="tagline">Upload your Goodreads or Libby reading history and discover the genetic code of your literary taste — an interactive map of every genre you've ever loved.</p>
   <div class="dropzone" id="dropzone">
     <span class="dz-icon">📚</span>
-    <div class="dz-title">Drop your Goodreads export here</div>
-    <div class="dz-sub">Go to Goodreads → My Books → Import &amp; Export → Export Library, then drop the .csv file here</div>
+    <div class="dz-title">Drop your Goodreads or Libby export here</div>
+    <div class="dz-sub"><strong>Goodreads:</strong> My Books → Import &amp; Export → Export Library<br><strong>Libby:</strong> Shelf → Timeline → Actions → Export Timeline → Spreadsheet<br>Drop one file, or both together to combine them</div>
     <button class="btn-teal" id="chooseBtn">Choose File</button>
-    <input type="file" id="fileInput" accept=".csv">
+    <input type="file" id="fileInput" accept=".csv" multiple>
   </div>
   <div class="pills">
     <div class="pill"><div class="pill-dot" style="background:var(--teal)"></div>Maps every genre you've read</div>
@@ -562,16 +562,18 @@ function parseCSVLine(line) {
 }
 
 function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) return [];
   const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').toLowerCase());
   const col = name => headers.findIndex(h => h.includes(name));
+  // Libby timeline export: cover,title,author,publisher,isbn,timestamp,activity,details,library
+  const isLibby = headers.includes('activity') && headers.includes('timestamp');
   const iTitle  = col('title');
   const iAuthor = col('author');
   const iRating = col('my rating');
   const iShelves = col('bookshelves');
   const iPages  = col('number of pages');
-  const iShelf  = col('exclusive shelf');
+  const iActivity = col('activity');
 
   const books = [];
   for (let i = 1; i < lines.length; i++) {
@@ -579,13 +581,48 @@ function parseCSV(text) {
     const title = (c[iTitle] || '').replace(/^"|"$/g, '').trim();
     if (!title) continue;
     const author  = (c[iAuthor]  || '').replace(/^"|"$/g, '').trim();
-    const rating  = parseInt(c[iRating]) || 0;
-    const shelves = (c[iShelves] || '').replace(/^"|"$/g, '').trim();
-    const pages   = parseInt(c[iPages]) || 0;
+    if (isLibby) {
+      // Holds aren't reads. Re-borrows repeat a book; parseAll() dedups those.
+      if (/hold/i.test(c[iActivity] || '')) continue;
+    }
+    const rating  = isLibby ? 0 : parseInt(c[iRating]) || 0;
+    const shelves = isLibby ? '' : (c[iShelves] || '').replace(/^"|"$/g, '').trim();
+    const pages   = isLibby ? 0 : parseInt(c[iPages]) || 0;
     const genre = keywordGenre(title, author, shelves);
     books.push({ title, author, rating, pages, genre, color: colorForGenre(genre) });
   }
   return books;
+}
+
+/* Matching the same book across exports. Goodreads adds "(Series, #2)", Libby
+   drops a leading "The" or adds a subtitle, and authors differ in accents,
+   order ("Liu Cixin"), and co-authors. So: same title, and at least one
+   author name in common. */
+const fold = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ø/g, 'o');
+function titleKey(title) {
+  return fold(title).replace(/\(.*?\)/g, '').split(':')[0]
+    .replace(/^\s*(the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
+}
+function authorWords(author) {
+  return new Set(fold(author).split(/[^a-z]+/).filter(w => w.length > 2));
+}
+
+/* Merge several exports. When a book shows up twice, keep the copy that knows
+   more (Goodreads has your rating and page count, Libby has neither). */
+function parseAll(texts) {
+  const byTitle = new Map(), out = [];
+  const score = b => (b.rating ? 2 : 0) + (b.pages ? 1 : 0);
+  texts.flatMap(parseCSV).forEach(b => {
+    const t = titleKey(b.title), aw = authorWords(b.author);
+    const same = (byTitle.get(t) || []).find(x => [...aw].some(w => x.aw.has(w)));
+    if (!same) {
+      const entry = { aw, idx: out.push(b) - 1 };
+      byTitle.set(t, [...(byTitle.get(t) || []), entry]);
+    } else if (score(b) > score(out[same.idx])) {
+      out[same.idx] = b;
+    }
+  });
+  return out;
 }
 
 /* ════════════════════════════════════════
@@ -618,21 +655,19 @@ document.getElementById('chooseBtn').addEventListener('click', e => {
   fi.click();
 });
 fi.addEventListener('change', e => {
-  if (e.target.files[0]) loadFile(e.target.files[0]);
+  if (e.target.files.length) loadFiles(e.target.files);
 });
 dz.addEventListener('click', () => fi.click());
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
 dz.addEventListener('drop', e => {
   e.preventDefault(); dz.classList.remove('over');
-  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
 });
 
-function loadFile(file) {
+function loadFiles(files) {
   showView('vAnalyzing');
-  const reader = new FileReader();
-  reader.onload = e => analyze(e.target.result);
-  reader.readAsText(file);
+  Promise.all([...files].map(f => f.text())).then(analyze);
 }
 
 const SEQ_MSGS = [
@@ -644,7 +679,7 @@ const SEQ_MSGS = [
   'Rendering your BookDNA',
 ];
 
-function analyze(csv) {
+function analyze(texts) {
   let pct = 0, step = 0;
   const ring = document.getElementById('progressRing');
   const pctEl = document.getElementById('progressPct');
@@ -659,7 +694,7 @@ function analyze(csv) {
     if (pct >= 100) {
       clearInterval(tick);
       setTimeout(async () => {
-        allBooks = parseCSV(csv);
+        allBooks = parseAll(texts);
         statusEl.innerHTML = 'Using AI to classify genres<span class="dots"></span>';
         const aiMap = await classifyGenresWithAI(allBooks);
         if (aiMap) {
