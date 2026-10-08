@@ -322,6 +322,153 @@ html, body {
 }
 .btn-refresh:hover { background: rgba(0,212,180,.08); border-color: var(--teal); }
 .btn-refresh:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── TABS ── */
+.tb-left { display: flex; align-items: center; gap: 1.4rem; }
+.tabs {
+  display: flex; gap: .2rem; padding: .2rem;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 50px;
+}
+.tab {
+  background: none; border: none; color: var(--muted);
+  font: 500 .76rem 'Inter', sans-serif;
+  padding: .42rem 1rem; border-radius: 50px;
+  cursor: pointer; white-space: nowrap;
+  transition: background .2s, color .2s;
+}
+.tab:hover { color: var(--text); }
+.tab.on { background: rgba(0,212,180,.14); color: var(--teal); }
+.tab .badge {
+  display: none; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber); margin-left: .4rem; vertical-align: middle;
+}
+.tab.ready .badge { display: inline-block; }
+.map-wrap.off, .pane.off { display: none; }
+
+/* ── HABITS + FOR YOU PANES ── */
+.pane {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 2rem 1.75rem 4rem;
+  scrollbar-width: thin; scrollbar-color: var(--dim) transparent;
+}
+.pane-inner { max-width: 1100px; margin: 0 auto; }
+.pane-h { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: .35rem; }
+.pane-sub { color: var(--muted); font-size: .86rem; line-height: 1.6; max-width: 660px; margin-bottom: 1.6rem; }
+.sect-h {
+  font-size: .66rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); margin: 1.8rem 0 .8rem;
+}
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; }
+.tile { background: rgba(12,18,32,.85); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 1rem 1.1rem; }
+.tile .n { font-size: 1.55rem; font-weight: 600; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+.tile .l { font-size: .64rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-top: .35rem; }
+
+.tells { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .75rem; }
+.tell {
+  padding: .95rem 1.05rem; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(0,212,180,.07), rgba(123,97,255,.09));
+  border: 1px solid rgba(123,97,255,.2);
+}
+.tell-n { font-weight: 600; font-size: .92rem; margin-bottom: .25rem; }
+.tell-n span { margin-right: .4rem; }
+.tell-d { font-size: .76rem; color: var(--muted); line-height: 1.55; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); grid-auto-flow: dense; align-items: start; gap: 1rem; }
+.card { background: rgba(12,18,32,.85); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 1.15rem 1.25rem; min-width: 0; }
+.card.wide { grid-column: 1 / -1; }
+.card-t { font-family: 'Playfair Display', serif; font-size: 1.12rem; margin-bottom: .2rem; }
+.card-s { font-size: .74rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.5; }
+.card-note { font-size: .68rem; color: var(--dim); margin-top: .8rem; line-height: 1.5; }
+
+.hbar { display: grid; grid-template-columns: minmax(0, 10rem) 1fr 2.2rem; align-items: center; gap: .6rem; margin-bottom: .45rem; font-size: .78rem; }
+.hbar-l { color: #C8C4BC; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar-track { height: 8px; }
+.hbar-fill { height: 100%; background: var(--teal); border-radius: 0 4px 4px 0; min-width: 3px; opacity: .8; transition: opacity .15s; }
+.hbar:hover .hbar-fill { opacity: 1; }
+.hbar-v { color: var(--muted); font-size: .74rem; text-align: right; font-variant-numeric: tabular-nums; }
+
+.cols { display: flex; align-items: flex-end; gap: 2px; height: 130px; padding-top: 1.6rem; }
+.col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; cursor: default; }
+.col-fill { background: var(--teal); border-radius: 4px 4px 0 0; min-height: 2px; opacity: .8; transition: opacity .15s; }
+.col.zero .col-fill { background: rgba(255,255,255,.08); }
+.col:hover .col-fill { opacity: 1; }
+.col:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: rgba(10,16,30,.97); border: 1px solid rgba(0,212,180,.25);
+  border-radius: 8px; padding: .3rem .55rem;
+  font-size: .7rem; color: var(--text); white-space: nowrap; z-index: 5; pointer-events: none;
+}
+.cols-x { display: flex; gap: 2px; margin-top: .35rem; border-top: 1px solid rgba(255,255,255,.08); padding-top: .3rem; }
+.cols-x span { flex: 1; text-align: center; font-size: .6rem; color: var(--dim); white-space: nowrap; overflow: visible; }
+
+.srow { display: flex; justify-content: space-between; align-items: flex-start; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.srow:last-child { border-bottom: none; }
+.srow-n { font-size: .82rem; color: var(--text); font-weight: 500; }
+.srow-a { font-size: .7rem; color: var(--dim); margin-top: 1px; }
+.pips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: .4rem; }
+.pip { width: 10px; height: 10px; border-radius: 3px; background: rgba(255,255,255,.08); }
+.pip.on { background: var(--teal); }
+.srow-r { text-align: right; flex-shrink: 0; }
+.srow-c { font-size: .78rem; color: var(--muted); }
+.srow-next { font-size: .68rem; color: var(--amber); margin-top: .2rem; white-space: nowrap; }
+
+.blist .bchip-t { white-space: normal; }
+.empty { font-size: .78rem; color: var(--dim); line-height: 1.6; }
+
+/* For You */
+.persona {
+  padding: 1.7rem 1.8rem; border-radius: 20px; margin-bottom: .5rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(0,212,180,.13), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(123,97,255,.15), transparent 55%),
+    rgba(12,18,32,.9);
+  border: 1px solid rgba(0,212,180,.2);
+}
+.persona-k { font-size: .64rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); margin-bottom: .5rem; }
+.persona-name {
+  font-family: 'Playfair Display', serif; font-weight: 900;
+  font-size: clamp(1.8rem, 4.5vw, 2.7rem); line-height: 1.1; margin-bottom: .4rem;
+  background: linear-gradient(135deg, var(--teal), var(--purple) 60%, var(--amber));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.persona-tag { color: var(--muted); font-style: italic; font-size: .95rem; margin-bottom: 1rem; }
+.persona-sum { color: #C8C4BC; font-size: .9rem; line-height: 1.75; max-width: 760px; }
+.traits { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.1rem; }
+.trait { font-size: .74rem; padding: .35rem .8rem; border-radius: 50px; border: 1px solid rgba(255,255,255,.12); color: var(--text); background: rgba(255,255,255,.03); }
+
+.fy-bar { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.lane-h { display: flex; align-items: baseline; gap: .6rem; margin: 1.9rem 0 .85rem; }
+.lane-h b { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; }
+.lane-h span { font-size: .74rem; color: var(--muted); }
+.picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: .9rem; }
+.pick { display: flex; gap: .95rem; padding: .95rem; background: rgba(12,18,32,.85); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; transition: border-color .2s, transform .2s; }
+.pick:hover { border-color: rgba(0,212,180,.3); transform: translateY(-2px); }
+.pick-cover {
+  width: 66px; height: 100px; flex-shrink: 0; border-radius: 6px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 1.6rem; color: rgba(255,255,255,.55);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.pick-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pick-body { min-width: 0; display: flex; flex-direction: column; }
+.pick-t { font-size: .9rem; font-weight: 600; line-height: 1.3; }
+.pick-a { font-size: .74rem; color: var(--muted); margin: .15rem 0 .4rem; }
+.pick-why { font-size: .76rem; color: #7B9AB5; line-height: 1.55; flex: 1; }
+.pick-links { display: flex; gap: .9rem; margin-top: .55rem; }
+.pick-links a { font-size: .7rem; color: var(--teal); text-decoration: none; opacity: .85; }
+.pick-links a:hover { opacity: 1; text-decoration: underline; }
+
+@media (max-width: 900px) {
+  .topbar { flex-wrap: wrap; gap: .7rem; padding: .7rem 1rem; }
+  .tb-stats, .hint-text { display: none; }
+  .tb-left { gap: .8rem; flex-wrap: wrap; }
+  .pane { padding: 1.4rem 1rem 3rem; }
+  .grid, .picks { grid-template-columns: 1fr; }
+}
 </style>
 <body>
 
@@ -340,7 +487,7 @@ html, body {
   </div>
   <div class="pills">
     <div class="pill"><div class="pill-dot" style="background:var(--teal)"></div>Maps every genre you've read</div>
-    <div class="pill"><div class="pill-dot" style="background:var(--purple)"></div>Clickable bubble exploration</div>
+    <div class="pill"><div class="pill-dot" style="background:var(--purple)"></div>Spots your reading habits</div>
     <div class="pill"><div class="pill-dot" style="background:var(--amber)"></div>AI picks your next reads</div>
   </div>
 
@@ -364,7 +511,14 @@ html, body {
 <!-- DNA MAP VIEW -->
 <div class="view hidden" id="vDNA">
   <div class="topbar">
-    <div class="tb-logo">BookDNA™</div>
+    <div class="tb-left">
+      <div class="tb-logo">BookDNA™</div>
+      <div class="tabs">
+        <button class="tab on" data-tab="map">Genre Map</button>
+        <button class="tab" data-tab="habits">Reading Habits</button>
+        <button class="tab" data-tab="foryou">For You<span class="badge"></span></button>
+      </div>
+    </div>
     <div class="tb-stats">
       <div class="tb-stat"><span class="n" id="statBooks">0</span><span class="l">Books</span></div>
       <div class="tb-stat"><span class="n" id="statGenres">0</span><span class="l">Genres</span></div>
@@ -382,6 +536,8 @@ html, body {
       <div class="panel-body" id="panelBody"></div>
     </div>
   </div>
+  <div class="pane off" id="paneHabits"></div>
+  <div class="pane off" id="paneForYou"></div>
 </div>
 
 <script>
@@ -548,48 +704,114 @@ function detectGenre(title, author, shelves) {
 
 /* ════════════════════════════════════════
    CSV PARSER
+   Handles quoted commas, "" escapes, and line breaks inside quotes
+   (Goodreads reviews and private notes contain them).
 ════════════════════════════════════════ */
-function parseCSVLine(line) {
-  const out = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { inQ = !inQ; }
-    else if (ch === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
-    else { cur += ch; }
+function csvRows(text) {
+  text = text.replace(/^﻿/, '');
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch !== '"') cur += ch;
+      else if (text[i + 1] === '"') { cur += '"'; i++; }
+      else inQ = false;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ',') { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cur); rows.push(row); row = []; cur = '';
+    } else cur += ch;
   }
-  out.push(cur.trim());
-  return out;
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
+
+const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+
+// Libby: "October 03, 2026 11:45"
+function parseLibbyDate(s) {
+  const m = /([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/.exec(s || '');
+  const mo = m ? MONTHS.indexOf(m[1].toLowerCase()) : -1;
+  return mo < 0 ? null : new Date(+m[3], mo, +m[2], +(m[4] || 0), +(m[5] || 0));
+}
+
+// Goodreads: "2026/09/08"
+function parseGRDate(s) {
+  const m = /(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/.exec(s || '');
+  return m ? new Date(+m[1], m[2] - 1, +m[3]) : null;
+}
+
+function formatOf(binding) {
+  if (/audio/i.test(binding)) return 'Audiobook';
+  if (/kindle|ebook|nook|digital/i.test(binding)) return 'Ebook';
+  if (/paper|hardcover|mass market|board|library binding/i.test(binding)) return 'Print';
+  return '';
+}
+
+// Goodreads titles carry "(The Expanse, #4)"
+function seriesOf(title) {
+  const m = /\(([^()]+?),?\s*#(\d+(?:\.\d+)?)\)\s*$/.exec(title);
+  return m ? { name: m[1].trim(), n: parseFloat(m[2]) } : null;
+}
+
+function mkBook(o) {
+  const b = Object.assign({
+    rating: 0, pages: 0, shelves: '', shelf: '', format: '', year: 0,
+    dateRead: null, dateAdded: null, borrowDates: [], readCount: 0,
+    cover: '', library: '', sources: [],
+  }, o);
+  b.series = seriesOf(b.title);
+  b.genre = keywordGenre(b.title, b.author, b.shelves);
+  b.color = colorForGenre(b.genre);
+  return b;
 }
 
 function parseCSV(text) {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').toLowerCase());
+  const rows = csvRows(text);
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.trim().toLowerCase());
   const col = name => headers.findIndex(h => h.includes(name));
+  const exact = name => headers.indexOf(name);
   // Libby timeline export: cover,title,author,publisher,isbn,timestamp,activity,details,library
   const isLibby = headers.includes('activity') && headers.includes('timestamp');
-  const iTitle  = col('title');
-  const iAuthor = col('author');
-  const iRating = col('my rating');
-  const iShelves = col('bookshelves');
-  const iPages  = col('number of pages');
-  const iActivity = col('activity');
+  const iTitle = col('title');
+  const iAuthor = exact('author') >= 0 ? exact('author') : col('author');
+  const at = (c, i) => (i >= 0 ? c[i] || '' : '').trim();
 
   const books = [];
-  for (let i = 1; i < lines.length; i++) {
-    const c = parseCSVLine(lines[i]);
-    const title = (c[iTitle] || '').replace(/^"|"$/g, '').trim();
+  for (const c of rows.slice(1)) {
+    const title = at(c, iTitle);
     if (!title) continue;
-    const author  = (c[iAuthor]  || '').replace(/^"|"$/g, '').trim();
+    const author = at(c, iAuthor);
     if (isLibby) {
-      // Holds aren't reads. Re-borrows repeat a book; parseAll() dedups those.
-      if (/hold/i.test(c[iActivity] || '')) continue;
+      // Holds aren't reads. Re-borrows repeat a book; parseAll() merges those.
+      if (/hold/i.test(at(c, col('activity')))) continue;
+      const when = parseLibbyDate(at(c, col('timestamp')));
+      books.push(mkBook({
+        title, author,
+        borrowDates: when ? [when] : [],
+        cover: at(c, col('cover')),
+        library: at(c, col('library')),
+        sources: ['Libby'],
+      }));
+    } else {
+      const format = formatOf(at(c, exact('binding')));
+      books.push(mkBook({
+        title, author, format,
+        rating: parseInt(at(c, col('my rating'))) || 0,
+        // Audiobook "pages" are discs or hours, not pages.
+        pages: format === 'Audiobook' ? 0 : parseInt(at(c, col('number of pages'))) || 0,
+        shelves: at(c, exact('bookshelves')),
+        shelf: at(c, exact('exclusive shelf')),
+        year: parseInt(at(c, exact('original publication year'))) || parseInt(at(c, exact('year published'))) || 0,
+        dateRead: parseGRDate(at(c, exact('date read'))),
+        dateAdded: parseGRDate(at(c, exact('date added'))),
+        readCount: parseInt(at(c, exact('read count'))) || 0,
+        sources: ['Goodreads'],
+      }));
     }
-    const rating  = isLibby ? 0 : parseInt(c[iRating]) || 0;
-    const shelves = isLibby ? '' : (c[iShelves] || '').replace(/^"|"$/g, '').trim();
-    const pages   = isLibby ? 0 : parseInt(c[iPages]) || 0;
-    const genre = keywordGenre(title, author, shelves);
-    books.push({ title, author, rating, pages, genre, color: colorForGenre(genre) });
   }
   return books;
 }
@@ -598,7 +820,7 @@ function parseCSV(text) {
    drops a leading "The" or adds a subtitle, and authors differ in accents,
    order ("Liu Cixin"), and co-authors. So: same title, and at least one
    author name in common. */
-const fold = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ø/g, 'o');
+const fold = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ø/g, 'o');
 function titleKey(title) {
   return fold(title).replace(/\(.*?\)/g, '').split(':')[0]
     .replace(/^\s*(the|a|an)\s+/, '').replace(/[^a-z0-9]/g, '');
@@ -607,8 +829,21 @@ function authorWords(author) {
   return new Set(fold(author).split(/[^a-z]+/).filter(w => w.length > 2));
 }
 
+// Fill in what the kept copy doesn't know from the duplicate.
+function mergeInto(keep, other) {
+  for (const k of ['pages', 'year', 'format', 'cover', 'library', 'dateRead', 'dateAdded', 'shelf', 'series']) {
+    if (!keep[k] && other[k]) keep[k] = other[k];
+  }
+  keep.borrowDates = keep.borrowDates.concat(other.borrowDates);
+  keep.readCount = Math.max(keep.readCount, other.readCount);
+  keep.sources = [...new Set(keep.sources.concat(other.sources))];
+  return keep;
+}
+
 /* Merge several exports. When a book shows up twice, keep the copy that knows
-   more (Goodreads has your rating and page count, Libby has neither). */
+   more (Goodreads has your rating and page count, Libby has neither) and fold
+   the other copy's details into it. Sets toReadTitles as a side effect. */
+let toReadTitles = [];
 function parseAll(texts) {
   const byTitle = new Map(), out = [];
   const score = b => (b.rating ? 2 : 0) + (b.pages ? 1 : 0);
@@ -619,10 +854,22 @@ function parseAll(texts) {
       const entry = { aw, idx: out.push(b) - 1 };
       byTitle.set(t, [...(byTitle.get(t) || []), entry]);
     } else if (score(b) > score(out[same.idx])) {
-      out[same.idx] = b;
+      out[same.idx] = mergeInto(b, out[same.idx]);
+    } else {
+      mergeInto(out[same.idx], b);
     }
   });
-  return out;
+
+  toReadTitles = out.filter(b => b.shelf === 'to-read').map(b => b.title);
+  const read = out.filter(b => b.shelf !== 'to-read');
+  for (const b of read) {
+    b.borrowDates.sort((x, y) => x - y);
+    // Best guess at when you read it: Goodreads finish date, else first Libby
+    // borrow, else the day it went on your Goodreads shelf.
+    b.realDate = b.dateRead || b.borrowDates[0] || null;
+    b.when = b.realDate || b.dateAdded || null;
+  }
+  return read;
 }
 
 /* ════════════════════════════════════════
@@ -733,6 +980,10 @@ function launchDNA() {
   document.getElementById('statGenres').textContent = Object.keys(groups).length;
   document.getElementById('statRating').textContent = avg;
 
+  habits = computeHabits(allBooks);
+  renderHabits();
+  loadInsights();
+
   // Small delay so the view is visible before we measure it
   setTimeout(initCanvas, 80);
 }
@@ -740,20 +991,24 @@ function launchDNA() {
 /* ════════════════════════════════════════
    CANVAS + RENDER LOOP
 ════════════════════════════════════════ */
-let cvs, ctx, CW, CH;
+let cvs, ctx, CW, CH, builtFor = '';
 
 function initCanvas() {
+  const first = !cvs;
   cvs = document.getElementById('cvs');
   ctx = cvs.getContext('2d');
   fitCanvas();
   buildBubbles();
 
-  cvs.addEventListener('mousemove', onMouseMove);
-  cvs.addEventListener('mousedown', onMouseDown);
-  window.addEventListener('mouseup', onMouseUp);
-  cvs.addEventListener('click', onMouseClick);
-  cvs.addEventListener('wheel', onWheel, { passive: true });
-  window.addEventListener('resize', () => { fitCanvas(); buildBubbles(); });
+  if (first) {
+    cvs.addEventListener('mousemove', onMouseMove);
+    cvs.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    cvs.addEventListener('click', onMouseClick);
+    cvs.addEventListener('wheel', onWheel, { passive: true });
+    // The map tab is hidden while another tab is showing; switchTab() re-lays it out.
+    window.addEventListener('resize', () => { if (curTab === 'map') { fitCanvas(); buildBubbles(); } });
+  }
 
   if (rafId) cancelAnimationFrame(rafId);
   renderLoop();
@@ -768,6 +1023,7 @@ function fitCanvas() {
 
 function buildBubbles() {
   bubbles = [];
+  builtFor = CW + 'x' + CH;
   const entries = Object.entries(groups).sort((a, b) => b[1].books.length - a[1].books.length);
   const total = allBooks.length;
   const n = entries.length;
@@ -1137,12 +1393,450 @@ async function fetchRecs(b) {
 }
 
 /* ════════════════════════════════════════
+   TABS
+════════════════════════════════════════ */
+let curTab = 'map';
+function switchTab(tab) {
+  curTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.tab === tab);
+    if (t.dataset.tab === tab) t.classList.remove('ready');
+  });
+  document.querySelector('.map-wrap').classList.toggle('off', tab !== 'map');
+  document.getElementById('paneHabits').classList.toggle('off', tab !== 'habits');
+  document.getElementById('paneForYou').classList.toggle('off', tab !== 'foryou');
+  document.querySelector('.hint-text').style.visibility = tab === 'map' ? '' : 'hidden';
+  if (tab === 'map' && cvs) { fitCanvas(); if (builtFor !== CW + 'x' + CH) buildBubbles(); }
+  if (tab === 'foryou' && !insightsJob) loadInsights();
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+/* ════════════════════════════════════════
+   READING HABITS
+   Everything here is computed in the browser from the exports. No AI.
+════════════════════════════════════════ */
+let habits = null;
+
+// Libby joins co-authors with commas, and Goodreads has stray double spaces.
+const cleanAuthor = a => (a || '').split(',')[0].replace(/\s+/g, ' ').trim();
+const authorKey = a => fold(cleanAuthor(a)).replace(/[^a-z]/g, '');
+const pct = (n, d) => d ? Math.round(n / d * 100) : 0;
+const median = xs => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const hourLabel = h => h === 0 ? '12am' : h < 12 ? h + 'am' : h === 12 ? '12pm' : (h - 12) + 'pm';
+
+function computeHabits(books) {
+  const H = { total: books.length };
+
+  // Authors
+  const byAuthor = new Map();
+  for (const b of books) {
+    const k = authorKey(b.author);
+    if (!k) continue;
+    if (!byAuthor.has(k)) byAuthor.set(k, { name: cleanAuthor(b.author), books: [] });
+    byAuthor.get(k).books.push(b);
+  }
+  H.authors = [...byAuthor.values()].sort((a, b) => b.books.length - a.books.length);
+
+  // Series, with gaps and the next number up
+  const bySeries = new Map();
+  for (const b of books) {
+    if (!b.series) continue;
+    const k = fold(b.series.name);
+    if (!bySeries.has(k)) bySeries.set(k, { name: b.series.name, author: cleanAuthor(b.author), nums: new Set() });
+    bySeries.get(k).nums.add(b.series.n);
+  }
+  H.series = [...bySeries.values()].map(s => {
+    const nums = [...s.nums].sort((a, b) => a - b);
+    const max = Math.floor(Math.max(...nums));
+    const missing = [];
+    for (let i = 1; i < max; i++) if (!s.nums.has(i)) missing.push(i);
+    return { name: s.name, author: s.author, nums, max, missing, next: max + 1 };
+  }).sort((a, b) => b.nums.length - a.nums.length || a.name.localeCompare(b.name));
+  H.seriesBooks = books.filter(b => b.series).length;
+
+  // Format (Goodreads "Binding")
+  const known = books.filter(b => b.format);
+  H.formatKnown = known.length;
+  H.formats = ['Audiobook', 'Ebook', 'Print'].map(f => ({ label: f, value: known.filter(b => b.format === f).length }));
+  H.libbyLoans = books.reduce((s, b) => s + b.borrowDates.length, 0);
+  H.libbyBooks = books.filter(b => b.borrowDates.length).length;
+  H.library = (books.find(b => b.library) || {}).library || '';
+
+  // Length
+  const paged = books.filter(b => b.pages > 0);
+  H.avgPages = paged.length ? Math.round(paged.reduce((s, b) => s + b.pages, 0) / paged.length) : 0;
+  const BUCKETS = [[0, 199, 'Under 200'], [200, 299, '200–299'], [300, 399, '300–399'], [400, 499, '400–499'], [500, 699, '500–699'], [700, 1e9, '700+']];
+  H.lengths = BUCKETS.map(([lo, hi, label]) => ({ label, value: paged.filter(b => b.pages >= lo && b.pages <= hi).length }));
+  H.longest = paged.sort((a, b) => b.pages - a.pages)[0] || null;
+
+  // Publication era
+  const dated = books.filter(b => b.year > 1000);
+  H.medianYear = median(dated.map(b => b.year));
+  H.oldest = [...dated].sort((a, b) => a.year - b.year)[0] || null;
+  if (dated.length) {
+    const lo = Math.floor(Math.min(...dated.map(b => b.year)) / 10) * 10;
+    const hi = Math.floor(Math.max(...dated.map(b => b.year)) / 10) * 10;
+    H.decades = [];
+    for (let d = Math.max(lo, hi - 120); d <= hi; d += 10) {
+      const n = dated.filter(b => b.year >= d && b.year < d + 10).length;
+      H.decades.push({ label: d + 's', value: n, tip: `${d}s: ${n} book${n === 1 ? '' : 's'}` });
+    }
+  }
+
+  // Reading by year (finish date, Libby borrow, or Goodreads shelf date)
+  const whenBooks = books.filter(b => b.when);
+  if (whenBooks.length) {
+    const ys = whenBooks.map(b => b.when.getFullYear());
+    const hi = Math.max(...ys), lo = Math.max(Math.min(...ys), hi - 14);
+    H.years = [];
+    for (let y = lo; y <= hi; y++) {
+      const n = ys.filter(x => x === y).length;
+      H.years.push({ label: String(y), value: n, tip: `${y}: ${n} book${n === 1 ? '' : 's'}` });
+    }
+    H.bestYear = H.years.reduce((a, b) => b.value > a.value ? b : a);
+  }
+  H.dateNote = books.some(b => !b.realDate && b.dateAdded)
+    ? 'Goodreads only exports a finish date when you set one, so books without it are placed by the day you shelved them.'
+    : '';
+
+  // When you borrow (Libby timestamps carry the time of day)
+  const stamps = books.flatMap(b => b.borrowDates);
+  if (stamps.length >= 10) {
+    const hours = Array(24).fill(0), days = Array(7).fill(0);
+    stamps.forEach(d => { hours[d.getHours()]++; days[d.getDay()]++; });
+    H.hours = hours.map((n, h) => ({ label: h % 6 === 0 ? hourLabel(h) : '', value: n, tip: `${hourLabel(h)}: ${n} borrow${n === 1 ? '' : 's'}` }));
+    H.days = days.map((n, i) => ({ label: DAYS[i], value: n, tip: `${DAYS[i]}: ${n} borrow${n === 1 ? '' : 's'}` }));
+    H.peakHour = hours.indexOf(Math.max(...hours));
+    H.peakDay = DAYS[days.indexOf(Math.max(...days))];
+    H.lateShare = pct([21, 22, 23, 0, 1, 2, 3].reduce((s, h) => s + hours[h], 0), stamps.length);
+    H.earlyShare = pct([5, 6, 7, 8].reduce((s, h) => s + hours[h], 0), stamps.length);
+  }
+
+  // Binges: same author back to back, using only real read/borrow dates
+  const timeline = books.filter(b => b.realDate).sort((a, b) => a.realDate - b.realDate);
+  const runs = [];
+  for (let i = 0; i < timeline.length;) {
+    let j = i;
+    while (j + 1 < timeline.length && authorKey(timeline[j + 1].author) === authorKey(timeline[i].author)) j++;
+    if (j - i + 1 >= 3) runs.push({ author: cleanAuthor(timeline[i].author), books: timeline.slice(i, j + 1) });
+    i = j + 1;
+  }
+  const seen = new Set();
+  H.binges = runs.sort((a, b) => b.books.length - a.books.length)
+    .filter(r => !seen.has(r.author) && seen.add(r.author)).slice(0, 4);
+
+  // Comfort reads: borrowed again on Libby, or read more than once on Goodreads
+  H.comfort = books.map(b => ({ b, n: Math.max(b.borrowDates.length, b.readCount) }))
+    .filter(x => x.n > 1).sort((a, b) => b.n - a.n).slice(0, 8);
+
+  // Ratings
+  const rated = books.filter(b => b.rating > 0);
+  H.ratedCount = rated.length;
+  H.avgRating = rated.length ? rated.reduce((s, b) => s + b.rating, 0) / rated.length : 0;
+  H.favorites = rated.filter(b => b.rating >= 4).sort((a, b) => b.rating - a.rating).slice(0, 10);
+
+  H.genres = Object.entries(groups).map(([g, d]) => ({ genre: g, count: d.books.length })).sort((a, b) => b.count - a.count);
+  H.tells = computeTells(H);
+  return H;
+}
+
+const GENRE_PERSONA = {
+  'Mystery & Thriller': ['🔎', 'Crime Junkie'], 'Fantasy & Magic': ['🐉', 'World Hopper'],
+  'Sci-Fi & Speculative': ['🚀', 'Future Gazer'], 'Literary Fiction': ['🖋️', 'Sentence Collector'],
+  'Biography & Memoir': ['🎙️', 'Life Story Collector'], 'History': ['🏛️', 'Time Traveler'],
+  'Business & Finance': ['📈', 'Boardroom Reader'], 'Romance': ['💘', 'Hopeless Romantic'],
+  'Horror': ['🕯️', 'Fearless Reader'], 'Self-Help & Growth': ['🌱', 'Constant Improver'],
+};
+
+// Rule-based "tells": the habits that stand out, each backed by a number.
+function computeTells(H) {
+  const T = [];
+  const add = (icon, name, desc) => T.push({ icon, name, desc });
+  const g = H.genres.find(x => x.genre !== 'General Fiction');
+  if (g && g.count / H.total >= .3) {
+    const [icon, name] = GENRE_PERSONA[g.genre] || ['📚', 'Genre Devotee'];
+    add(icon, name, `${g.genre} is ${pct(g.count, H.total)}% of everything you've read.`);
+  }
+  if (H.seriesBooks / H.total >= .3) add('🔗', 'Series Loyalist', `${pct(H.seriesBooks, H.total)}% of your books are part of a series. Once you start one, you stay.`);
+  const top = H.authors[0];
+  if (top && top.books.length >= 8) add('🎯', 'Author Completist', `${top.books.length} books by ${top.name}. When you find a writer you like, you read the shelf.`);
+  if (H.binges[0] && H.binges[0].books.length >= 4) add('🍿', 'Binge Reader', `Your longest run was ${H.binges[0].books.length} ${H.binges[0].author} books in a row.`);
+  const audio = H.formats[0].value;
+  if (H.formatKnown >= 10 && audio / H.formatKnown >= .4) add('🎧', 'Ear Reader', `${pct(audio, H.formatKnown)}% of the books with a known format were audiobooks.`);
+  if (H.libbyLoans >= 40) add('🏛️', 'Library Champion', `${H.libbyLoans} Libby loans${H.library ? ' from ' + H.library : ''}. That card earns its keep.`);
+  if (H.hours && H.lateShare >= 30) add('🦉', 'Night Owl', `${H.lateShare}% of your Libby borrows happen between 9pm and 4am. Peak hour: ${hourLabel(H.peakHour)}.`);
+  else if (H.hours && H.earlyShare >= 25) add('🌅', 'Early Bird', `${H.earlyShare}% of your Libby borrows happen between 5am and 9am.`);
+  if (H.avgPages >= 420) add('🧱', 'Doorstop Reader', `Your average book runs ${H.avgPages} pages.`);
+  else if (H.avgPages && H.avgPages <= 260) add('⚡', 'Quick Hitter', `Your average book runs ${H.avgPages} pages.`);
+  if (H.medianYear >= 2015) add('🆕', 'Fresh Off the Press', `Half your books came out in ${H.medianYear} or later.`);
+  else if (H.medianYear && H.medianYear <= 1990) add('📜', 'Old Soul', `Half your books came out before ${H.medianYear}.`);
+  if (H.comfort.length >= 3) add('🛋️', 'Comfort Re-reader', `${H.comfort.length} books you went back for a second time.`);
+  if (H.ratedCount >= 10 && H.avgRating >= 4.3) add('⭐', 'Easy Grader', `You give an average of ${H.avgRating.toFixed(1)} stars.`);
+  if (H.ratedCount >= 10 && H.avgRating <= 3.2) add('🧐', 'Tough Critic', `You give an average of ${H.avgRating.toFixed(1)} stars.`);
+  if (H.authors.length / H.total >= .8 && H.total >= 20) add('🧭', 'Explorer', `${H.authors.length} different authors across ${H.total} books. You rarely go back to the same writer.`);
+  return T.slice(0, 6);
+}
+
+function hbars(rows) {
+  const max = Math.max(1, ...rows.map(r => r.value));
+  return rows.map(r => `
+    <div class="hbar" title="${esc(r.tip || r.label + ': ' + r.value)}">
+      <div class="hbar-l">${esc(r.label)}</div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${r.value / max * 100}%"></div></div>
+      <div class="hbar-v">${r.value}</div>
+    </div>`).join('');
+}
+
+function colChart(rows, labelEvery = 1) {
+  const max = Math.max(1, ...rows.map(r => r.value));
+  return `<div class="cols">${rows.map(r => `
+      <div class="col${r.value ? '' : ' zero'}" data-tip="${esc(r.tip || r.label + ': ' + r.value)}">
+        <div class="col-fill" style="height:${Math.max(r.value / max * 100, 1.5)}%"></div>
+      </div>`).join('')}</div>
+    <div class="cols-x">${rows.map((r, i) => `<span>${i % labelEvery === 0 ? esc(r.label) : ''}</span>`).join('')}</div>`;
+}
+
+function chip(b, right) {
+  return `<div class="bchip">
+      <div class="bchip-dot" style="background:${b.color}"></div>
+      <div class="bchip-body"><div class="bchip-t">${esc(b.title)}</div><div class="bchip-a">${esc(cleanAuthor(b.author))}</div></div>
+      ${right ? `<div class="bchip-r">${right}</div>` : ''}
+    </div>`;
+}
+
+function renderHabits() {
+  const H = habits;
+  const audio = H.formats[0].value;
+  const tiles = [
+    [H.total, 'Books'],
+    [H.authors.length, 'Authors'],
+    [H.series.filter(s => s.nums.length >= 2).length, 'Series followed'],
+    H.formatKnown ? [pct(audio, H.formatKnown) + '%', 'Audiobooks'] : null,
+    H.avgPages ? [H.avgPages, 'Avg pages'] : null,
+    H.medianYear ? [H.medianYear, 'Typical pub. year'] : null,
+    H.libbyLoans ? [H.libbyLoans, 'Libby loans'] : null,
+  ].filter(Boolean);
+
+  const series = H.series.filter(s => s.nums.length >= 2).slice(0, 10);
+  const seriesHtml = series.length ? series.map(s => {
+    const shown = Math.min(Math.max(s.max, s.nums.length), 24);
+    const pips = Array.from({ length: shown }, (_, i) =>
+      `<div class="pip${s.nums.includes(i + 1) ? ' on' : ''}" title="#${i + 1}"></div>`).join('');
+    const next = s.missing.length
+      ? `Skipped #${s.missing.slice(0, 3).join(', #')}${s.missing.length > 3 ? '…' : ''}`
+      : `Up next: #${s.next}`;
+    return `<div class="srow">
+        <div style="min-width:0"><div class="srow-n">${esc(s.name)}</div><div class="srow-a">${esc(s.author)}</div><div class="pips">${pips}</div></div>
+        <div class="srow-r"><div class="srow-c">${s.nums.length} read</div><div class="srow-next">${next}</div></div>
+      </div>`;
+  }).join('') : '<div class="empty">No series tags found. Goodreads exports mark series in the title, like "(The Expanse, #4)".</div>';
+
+  const cards = [];
+  cards.push(`<div class="card">
+      <div class="card-t">Ride-or-die authors</div>
+      <div class="card-s">The writers you keep coming back to.</div>
+      ${hbars(H.authors.slice(0, 10).map(a => ({ label: a.name, value: a.books.length, tip: a.books.map(b => b.title).slice(0, 6).join(' · ') })))}
+    </div>`);
+  cards.push(`<div class="card">
+      <div class="card-t">Series you're hooked on</div>
+      <div class="card-s">Each square is a book in the series. Teal ones you've read.</div>
+      ${seriesHtml}
+    </div>`);
+  if (H.years) cards.push(`<div class="card wide">
+      <div class="card-t">Your reading by year</div>
+      <div class="card-s">Biggest year: ${H.bestYear.label}, with ${H.bestYear.value} books.</div>
+      ${colChart(H.years, H.years.length > 8 ? 2 : 1)}
+      ${H.dateNote ? `<div class="card-note">${H.dateNote}</div>` : ''}
+    </div>`);
+  if (H.hours) cards.push(`<div class="card">
+      <div class="card-t">When you borrow</div>
+      <div class="card-s">From your Libby timestamps. You borrow most at ${hourLabel(H.peakHour)}, and most often on ${H.peakDay}s.</div>
+      ${colChart(H.hours)}
+      <div style="height:1.2rem"></div>
+      ${colChart(H.days)}
+    </div>`);
+  if (H.decades) cards.push(`<div class="card">
+      <div class="card-t">Your era</div>
+      <div class="card-s">When your books were first published.${H.oldest ? ` Oldest: <em>${esc(H.oldest.title)}</em> (${H.oldest.year}).` : ''}</div>
+      ${colChart(H.decades, H.decades.length > 8 ? 2 : 1)}
+    </div>`);
+  if (H.formatKnown) cards.push(`<div class="card">
+      <div class="card-t">How you read</div>
+      <div class="card-s">Format of the ${H.formatKnown} Goodreads books that list one.${H.libbyBooks ? ` Plus ${H.libbyBooks} books borrowed through Libby.` : ''}</div>
+      ${hbars(H.formats)}
+    </div>`);
+  if (H.avgPages) cards.push(`<div class="card">
+      <div class="card-t">Length appetite</div>
+      <div class="card-s">Print and ebook page counts from Goodreads. ${H.longest ? `Longest: <em>${esc(H.longest.title)}</em> at ${H.longest.pages} pages.` : ''}</div>
+      ${hbars(H.lengths)}
+    </div>`);
+  cards.push(`<div class="card">
+      <div class="card-t">Top genres</div>
+      <div class="card-s">The same data as the map, as a ranking.</div>
+      ${hbars(H.genres.slice(0, 8).map(x => ({ label: x.genre, value: x.count })))}
+    </div>`);
+  if (H.binges.length) cards.push(`<div class="card blist">
+      <div class="card-t">Binge streaks</div>
+      <div class="card-s">Same author, back to back, by the dates you read or borrowed them.</div>
+      ${H.binges.map(r => chip({ title: r.books.slice(0, 4).map(b => b.title.replace(/\s*\(.*?\)\s*$/, '')).join(' → ') + (r.books.length > 4 ? ' …' : ''), author: r.author, color: r.books[0].color }, r.books.length + ' in a row')).join('')}
+    </div>`);
+  if (H.comfort.length) cards.push(`<div class="card">
+      <div class="card-t">Comfort reads</div>
+      <div class="card-s">Books you borrowed or read more than once.</div>
+      ${H.comfort.map(x => chip(x.b, x.n + '×')).join('')}
+    </div>`);
+  if (H.favorites.length >= 3) cards.push(`<div class="card">
+      <div class="card-t">Your top shelf</div>
+      <div class="card-s">Your highest ratings. Average: ${H.avgRating.toFixed(1)}★ across ${H.ratedCount} rated books.</div>
+      ${H.favorites.map(b => chip(b, '★'.repeat(b.rating))).join('')}
+    </div>`);
+
+  document.getElementById('paneHabits').innerHTML = `<div class="pane-inner">
+    <div class="pane-h">What your shelf says about you</div>
+    <div class="pane-sub">Patterns pulled straight from your ${H.total} books. Hover any bar for the details.</div>
+    <div class="tiles">${tiles.map(([n, l]) => `<div class="tile"><div class="n">${esc(String(n))}</div><div class="l">${l}</div></div>`).join('')}</div>
+    ${H.tells.length ? `<div class="sect-h">Your tells</div>
+    <div class="tells">${H.tells.map(t => `<div class="tell"><div class="tell-n"><span>${t.icon}</span>${esc(t.name)}</div><div class="tell-d">${esc(t.desc)}</div></div>`).join('')}</div>` : ''}
+    <div class="sect-h">The lists</div>
+    <div class="grid">${cards.join('')}</div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════
+   FOR YOU: AI reader profile + auto picks
+   Starts in the background as soon as the map loads.
+════════════════════════════════════════ */
+let insightsJob = null, runId = 0;
+
+const LANES = {
+  series: ['Next in your series', 'Pick up where you left off'],
+  author: ['More from your favorites', 'Authors you already trust'],
+  match: ['Your DNA match', 'New-to-you authors that fit your pattern'],
+  wildcard: ['Wildcards', 'A step outside your usual, chosen for you'],
+};
+
+function buildProfile() {
+  const H = habits;
+  const byWhen = allBooks.filter(b => b.when).sort((a, b) => b.when - a.when);
+  return {
+    total: H.total,
+    audioShare: H.formatKnown ? pct(H.formats[0].value, H.formatKnown) : null,
+    avgPages: H.avgPages || null,
+    medianYear: H.medianYear || null,
+    genres: H.genres.slice(0, 8),
+    authors: H.authors.slice(0, 12).map(a => ({ author: a.name, count: a.books.length })),
+    series: H.series.slice(0, 15).map(s => ({ name: s.name, author: s.author, read: s.nums.slice(0, 30) })),
+    favorites: H.favorites.map(b => ({ title: b.title, author: cleanAuthor(b.author), rating: b.rating })),
+    recent: byWhen.slice(0, 15).map(b => ({ title: b.title, author: cleanAuthor(b.author) })),
+    traits: H.tells.map(t => t.name),
+    readTitles: allBooks.map(b => b.title).concat(toReadTitles),
+  };
+}
+
+function loadInsights() {
+  const myRun = ++runId;
+  renderForYouLoading();
+  const readKeys = new Set(allBooks.map(b => titleKey(b.title)));
+  insightsJob = callProxy('/insights', buildProfile())
+    .then(d => {
+      if (myRun !== runId) return;
+      // Hard filter: drop anything already read, whatever the model said.
+      const picks = (d.picks || []).filter(p => p.title && !readKeys.has(titleKey(p.title)));
+      renderForYou(d.persona, picks);
+      if (curTab !== 'foryou') document.querySelector('.tab[data-tab="foryou"]').classList.add('ready');
+    })
+    .catch(err => {
+      if (myRun !== runId) return;
+      insightsJob = null; // let the next tab visit retry
+      document.getElementById('paneForYou').innerHTML = `<div class="pane-inner">
+        <div class="err-box"><strong>Couldn't build your picks:</strong><br><br>${esc(err.message || 'Unknown error')}<br><br>
+        <button class="btn-refresh" onclick="loadInsights()">↻ Try again</button></div></div>`;
+    });
+  return insightsJob;
+}
+window.loadInsights = loadInsights;
+
+function renderForYouLoading() {
+  document.getElementById('paneForYou').innerHTML = `<div class="pane-inner">
+    <div class="rec-spinner" style="padding:5rem 0">
+      <span class="spinner">◌</span>
+      <span>Reading your ${allBooks.length} books and picking your next ones<span class="dots"></span></span>
+    </div></div>`;
+}
+
+const libbyKey = () => (habits.library || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+function renderForYou(persona, picks) {
+  const lib = libbyKey();
+  const pickCard = (p, i) => {
+    const q = encodeURIComponent(`${p.title} ${p.author}`);
+    const hue = [174, 252, 36, 330, 200, 280][i % 6];
+    return `<div class="pick">
+      <div class="pick-cover" id="cover${i}" style="background:linear-gradient(160deg,hsl(${hue} 60% 32%),hsl(${(hue + 40) % 360} 50% 16%))">${esc((p.title || '?').trim()[0])}</div>
+      <div class="pick-body">
+        <div class="pick-t">${esc(p.title)}</div>
+        <div class="pick-a">${esc(p.author)}</div>
+        <div class="pick-why">${esc(p.why)}</div>
+        <div class="pick-links">
+          <a href="https://www.goodreads.com/search?q=${q}" target="_blank" rel="noopener">Goodreads →</a>
+          ${lib ? `<a href="https://libbyapp.com/search/${lib}/search/query-${q}/page-1" target="_blank" rel="noopener">Find on Libby →</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+  };
+
+  let i = 0;
+  const lanes = Object.entries(LANES).map(([key, [title, sub]]) => {
+    const ps = picks.filter(p => (LANES[p.lane] ? p.lane : 'match') === key);
+    if (!ps.length) return '';
+    return `<div class="lane-h"><b>${title}</b><span>${sub}</span></div>
+      <div class="picks">${ps.map(p => { p._i = i; return pickCard(p, i++); }).join('')}</div>`;
+  }).join('');
+
+  document.getElementById('paneForYou').innerHTML = `<div class="pane-inner">
+    ${persona && persona.name ? `<div class="persona">
+      <div class="persona-k">Your reader profile</div>
+      <div class="persona-name">${esc(persona.name)}</div>
+      ${persona.tagline ? `<div class="persona-tag">${esc(persona.tagline)}</div>` : ''}
+      <div class="persona-sum">${esc(persona.summary || '')}</div>
+      ${(persona.traits || []).length ? `<div class="traits">${persona.traits.map(t => `<span class="trait">${esc(t)}</span>`).join('')}</div>` : ''}
+    </div>` : ''}
+    <div class="fy-bar">
+      <div class="sect-h" style="margin-bottom:0">${picks.length} books picked for you</div>
+      <button class="btn-refresh" onclick="loadInsights()">↻ New picks</button>
+    </div>
+    ${lanes || '<div class="err-box" style="margin-top:1rem">The AI came back without usable picks. Try New picks.</div>'}
+  </div>`;
+
+  picks.forEach(p => addCover(p, p._i));
+}
+
+// Covers from Open Library, best effort. The letter placeholder stays if none.
+async function addCover(p, i) {
+  try {
+    const u = `https://openlibrary.org/search.json?title=${encodeURIComponent(p.title)}&author=${encodeURIComponent(p.author)}&limit=1&fields=cover_i`;
+    const d = await (await fetch(u)).json();
+    const id = d.docs && d.docs[0] && d.docs[0].cover_i;
+    const el = document.getElementById('cover' + i);
+    if (!id || !el) return;
+    const img = new Image();
+    img.alt = '';
+    img.onload = () => { el.textContent = ''; el.appendChild(img); };
+    img.src = `https://covers.openlibrary.org/b/id/${id}-M.jpg`;
+  } catch (_) { /* keep the placeholder */ }
+}
+
+/* ════════════════════════════════════════
    RESET
 ════════════════════════════════════════ */
 function resetApp() {
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   allBooks = []; groups = {}; bubbles = [];
   selGenre = null; hovBubble = null;
+  habits = null; insightsJob = null; runId++;
+  switchTab('map');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('ready'));
   panX = 0; panY = 0; zoom = 1;
   document.getElementById('panel').classList.remove('open');
   document.getElementById('fileInput').value = '';
