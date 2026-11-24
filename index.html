@@ -186,6 +186,9 @@ html, body {
   transition: border-color .2s, color .2s;
 }
 .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+.btn-ghost.ok { border-color: var(--teal); color: var(--teal); }
+.share-err { max-width: 480px; width: 100%; margin-bottom: 1.4rem; text-align: left; }
+.share-note { font-size: .74rem; color: var(--muted); line-height: 1.6; }
 
 /* The map area fills everything below the topbar */
 .map-wrap {
@@ -478,6 +481,7 @@ html, body {
 <div class="view" id="vLanding">
   <div class="mark">BookDNA<sup>™</sup></div>
   <p class="tagline">Upload your Goodreads or Libby reading history and discover the genetic code of your literary taste — an interactive map of every genre you've ever loved.</p>
+  <div class="err-box share-err" id="shareErr" style="display:none"></div>
   <div class="dropzone" id="dropzone">
     <span class="dz-icon">📚</span>
     <div class="dz-title">Drop your Goodreads or Libby export here</div>
@@ -526,6 +530,7 @@ html, body {
     </div>
     <div class="tb-right">
       <span class="hint-text">Click any bubble to explore</span>
+      <button class="btn-ghost" id="shareBtn" onclick="copyShareLink()" title="Copy a link that reopens this map. The map data travels inside the link.">🔗 Copy shareable link</button>
       <button class="btn-ghost" onclick="resetApp()">↩ New Upload</button>
     </div>
   </div>
@@ -879,6 +884,12 @@ function parseAll(texts) {
 ════════════════════════════════════════ */
 let allBooks = [], groups = {}, bubbles = [];
 let selGenre = null, hovBubble = null;
+// Set when the map came from a shared link (#map=...) instead of a CSV.
+// Shared maps carry genre totals and a few titles, never the full book list.
+let shared = null;
+// Book count per genre, and for the whole library. Shared maps only know the totals.
+const gCount = d => d.n || d.books.length;
+const libSize = () => shared ? shared.n : allBooks.length;
 // Pan/zoom state
 let panX = 0, panY = 0, zoom = 1;
 let dragging = false, dragMoved = false, dragX0 = 0, dragY0 = 0;
@@ -915,6 +926,7 @@ dz.addEventListener('drop', e => {
 });
 
 function loadFiles(files) {
+  hideShareError();
   showView('vAnalyzing');
   Promise.all([...files].map(f => f.text())).then(analyze);
 }
@@ -954,6 +966,7 @@ function analyze(texts) {
         }
         buildGroups();
         launchDNA();
+        writeShareHash();
       }, 400);
     }
   }, 340);
@@ -974,17 +987,32 @@ function buildGroups() {
 function launchDNA() {
   showView('vDNA');
 
-  const rated = allBooks.filter(b => b.rating > 0);
-  const avg = rated.length
-    ? (rated.reduce((s, b) => s + b.rating, 0) / rated.length).toFixed(1) + '★'
-    : '—';
-  document.getElementById('statBooks').textContent = allBooks.length;
+  let avg;
+  if (shared) {
+    // Same overall average, rebuilt from the per-genre rating sums.
+    const sum = Object.values(groups).reduce((s, d) => s + d.ratingSum, 0);
+    const cnt = Object.values(groups).reduce((s, d) => s + d.ratingCount, 0);
+    avg = cnt ? (sum / cnt).toFixed(1) + '★' : '—';
+  } else {
+    const rated = allBooks.filter(b => b.rating > 0);
+    avg = rated.length
+      ? (rated.reduce((s, b) => s + b.rating, 0) / rated.length).toFixed(1) + '★'
+      : '—';
+  }
+  document.getElementById('statBooks').textContent = libSize();
   document.getElementById('statGenres').textContent = Object.keys(groups).length;
   document.getElementById('statRating').textContent = avg;
+  document.querySelector('.hint-text').textContent = shared ? 'Shared map · click any bubble' : 'Click any bubble to explore';
 
-  habits = computeHabits(allBooks);
-  renderHabits();
-  loadInsights();
+  if (shared) {
+    // Habits and For You need every book, which a shared link doesn't carry.
+    // Skipping loadInsights() also means opening a shared link never calls the AI.
+    renderSharedPanes();
+  } else {
+    habits = computeHabits(allBooks);
+    renderHabits();
+    loadInsights();
+  }
 
   // Small delay so the view is visible before we measure it
   setTimeout(initCanvas, 80);
@@ -1026,13 +1054,13 @@ function fitCanvas() {
 function buildBubbles() {
   bubbles = [];
   builtFor = CW + 'x' + CH;
-  const entries = Object.entries(groups).sort((a, b) => b[1].books.length - a[1].books.length);
-  const total = allBooks.length;
+  const entries = Object.entries(groups).sort((a, b) => gCount(b[1]) - gCount(a[1]));
+  const total = libSize();
   const n = entries.length;
 
   entries.forEach(([genre, data], i) => {
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2 + (Math.random() - .5) * .4;
-    const frac = data.books.length / total;
+    const frac = gCount(data) / total;
     // radius: min 22, scales with fraction of library
     const r = 22 + Math.sqrt(frac) * 120;
     // distance from center: big genres closer in
@@ -1189,7 +1217,7 @@ function draw() {
     ctx.shadowBlur = 0;
     ctx.font = `300 ${Math.max(7, fs * .78)}px Inter, sans-serif`;
     ctx.fillStyle = 'rgba(255,255,255,.65)';
-    ctx.fillText(b.data.books.length + ' books', s.x, s.y + fs * .85);
+    ctx.fillText(gCount(b.data) + ' books', s.x, s.y + fs * .85);
 
     ctx.restore();
   }
@@ -1221,7 +1249,7 @@ function onMouseMove(e) {
     const avg = b.data.ratingCount ? (b.data.ratingSum / b.data.ratingCount).toFixed(1) : null;
     document.getElementById('ttName').textContent = b.genre;
     document.getElementById('ttCount').textContent =
-      b.data.books.length + ' books' + (avg ? ' · avg ' + avg + '★' : '');
+      gCount(b.data) + ' books' + (avg ? ' · avg ' + avg + '★' : '');
     // Keep tooltip inside canvas
     const tx = Math.min(mx + 14, CW - 200);
     const ty = Math.max(my - 8, 8);
@@ -1304,22 +1332,17 @@ function renderPanel(b) {
       ${bk.rating > 0 ? `<div class="bchip-r">${'★'.repeat(bk.rating)}</div>` : ''}
     </div>`).join('');
 
-  const overflow = sorted.length > 10
-    ? `<div style="font-size:.7rem;color:var(--dim);text-align:center;padding:.4rem 0">+${sorted.length - 10} more</div>`
+  const shown = Math.min(sorted.length, 10);
+  const overflow = gCount(b.data) > shown
+    ? `<div style="font-size:.7rem;color:var(--dim);text-align:center;padding:.4rem 0">+${gCount(b.data) - shown} more</div>`
     : '';
 
-  document.getElementById('panelBody').innerHTML = `
-    <div class="ph">
-      <div>
-        <div class="ph-label" style="color:${b.color}">${b.data.books.length} books in your DNA</div>
-        <div class="ph-title">${esc(b.genre)}</div>
-        <div class="ph-meta">Avg rating: ${avg}★${avgPages ? ' · ' + avgPages + ' avg pages' : ''}</div>
-      </div>
-      <button class="ph-close" onclick="closePanel()">✕</button>
-    </div>
-    <div class="sec-lbl">Your reads</div>
-    ${bookChips}${overflow}
-    <div class="divider"></div>
+  // Shared maps don't have the reader's full title list, so the AI can't avoid
+  // books they've already read. Leave recommendations to people with the export.
+  const recsHtml = shared ? `
+    <div class="sec-lbl">AI recommendations</div>
+    <div class="err-box share-note">Recommendations aren't available on a shared map. The link only carries a few titles per genre, so the AI couldn't rule out books this reader has already read.<br><br><button class="btn-refresh" onclick="resetApp()">↩ Upload your own export</button></div>
+  ` : `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
       <div class="sec-lbl" style="margin-bottom:0">AI recommendations</div>
       <button class="btn-refresh" id="recRefreshBtn" onclick="refreshRecs()">↻ New suggestions</button>
@@ -1332,7 +1355,21 @@ function renderPanel(b) {
     </div>
   `;
 
-  fetchRecs(b);
+  document.getElementById('panelBody').innerHTML = `
+    <div class="ph">
+      <div>
+        <div class="ph-label" style="color:${b.color}">${gCount(b.data)} books in ${shared ? 'this' : 'your'} DNA</div>
+        <div class="ph-title">${esc(b.genre)}</div>
+        <div class="ph-meta">Avg rating: ${avg}★${avgPages ? ' · ' + avgPages + ' avg pages' : ''}</div>
+      </div>
+      <button class="ph-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="sec-lbl">${shared ? 'Top reads' : 'Your reads'}</div>
+    ${bookChips}${overflow}
+    <div class="divider"></div>
+    ${recsHtml}`;
+
+  if (!shared) fetchRecs(b);
 }
 
 /* ════════════════════════════════════════
@@ -1409,7 +1446,7 @@ function switchTab(tab) {
   document.getElementById('paneForYou').classList.toggle('off', tab !== 'foryou');
   document.querySelector('.hint-text').style.visibility = tab === 'map' ? '' : 'hidden';
   if (tab === 'map' && cvs) { fitCanvas(); if (builtFor !== CW + 'x' + CH) buildBubbles(); }
-  if (tab === 'foryou' && !insightsJob) loadInsights();
+  if (tab === 'foryou' && !insightsJob && !shared) loadInsights();
 }
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 
@@ -1830,6 +1867,271 @@ async function addCover(p, i) {
 }
 
 /* ════════════════════════════════════════
+   SHAREABLE LINKS
+   The map summary lives in the URL hash (#map=...), so a link reopens the
+   map with no server storage. Only genre totals and the top 3 titles per
+   genre go in; never the full book list, dates, or Libby details.
+
+   Format v1 (JSON, then LZ-compressed):
+     { v: 1, n: totalBooks,
+       g: [[genre, bookCount, ratingSum, ratedCount, [[title, author, rating] ×≤3]], ...] }
+   ratingSum + ratedCount give the exact average (per genre and overall) with
+   no rounding. Bump SHARE_VERSION on any breaking change to this shape.
+════════════════════════════════════════ */
+const SHARE_VERSION = 1;
+const SHARE_KEY = 'map=';
+const SHARE_LIMITS = { genres: 60, title: 120, author: 80, genre: 60, hash: 60000 };
+let lastShareHash = '';
+
+/* LZ codec, compatible with lz-string 1.5.0's compressToEncodedURIComponent /
+   decompressFromEncodedURIComponent (MIT, (c) 2013 Pieroxy,
+   https://github.com/pieroxy/lz-string). Trimmed to the URL-safe variant only.
+   Output uses a URL-safe base64 alphabet (A-Z a-z 0-9 + - $), 6 bits per char. */
+const LZ = (() => {
+  const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$';
+  const REV = {};
+  for (let i = 0; i < ABC.length; i++) REV[ABC[i]] = i;
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+  function compress(input) {
+    if (input == null) return '';
+    const dict = {}, fresh = {}, out = [];
+    let w = '', enlargeIn = 2, dictSize = 3, numBits = 2, val = 0, pos = 0;
+    const put = (v, n) => {
+      for (let i = 0; i < n; i++) {
+        val = (val << 1) | (v & 1); v >>= 1;
+        if (pos === 5) { pos = 0; out.push(ABC[val]); val = 0; } else pos++;
+      }
+    };
+    const grow = () => { if (--enlargeIn === 0) { enlargeIn = 1 << numBits; numBits++; } };
+    const emit = () => {
+      if (has(fresh, w)) {
+        const code = w.charCodeAt(0);
+        if (code < 256) { put(0, numBits); put(code, 8); }
+        else { put(1, numBits); put(code, 16); }
+        grow();
+        delete fresh[w];
+      } else put(dict[w], numBits);
+      grow();
+    };
+    for (let i = 0; i < input.length; i++) {
+      const c = input.charAt(i);
+      if (!has(dict, c)) { dict[c] = dictSize++; fresh[c] = true; }
+      const wc = w + c;
+      if (has(dict, wc)) w = wc;
+      else { emit(); dict[wc] = dictSize++; w = c; }
+    }
+    if (w !== '') emit();
+    put(2, numBits);
+    for (;;) { val <<= 1; if (pos === 5) { out.push(ABC[val]); break; } pos++; }
+    return out.join('');
+  }
+
+  // Returns the original string, or null/'' when the input isn't valid LZ data.
+  function decompress(input) {
+    if (input == null) return '';
+    if (input === '') return null;
+    input = input.replace(/ /g, '+');
+    const len = input.length, next = i => REV[input.charAt(i)];
+    const dict = [0, 1, 2], result = [];
+    let enlargeIn = 4, dictSize = 4, numBits = 3, val = next(0), pos = 32, idx = 1;
+    const read = n => {
+      let r = 0;
+      for (let p = 0; p < n; p++) {
+        const b = val & pos;
+        pos >>= 1;
+        if (pos === 0) { pos = 32; val = next(idx++); }
+        if (b) r |= 1 << p;
+      }
+      return r;
+    };
+    let c = read(2);
+    if (c === 2) return '';
+    if (c > 2) return null;
+    let w = String.fromCharCode(read(c === 0 ? 8 : 16));
+    dict[3] = w; result.push(w);
+    for (;;) {
+      if (idx > len) return '';
+      c = read(numBits);
+      if (c === 2) return result.join('');
+      if (c < 2) { dict[dictSize++] = String.fromCharCode(read(c === 0 ? 8 : 16)); c = dictSize - 1; enlargeIn--; }
+      if (enlargeIn === 0) { enlargeIn = 1 << numBits; numBits++; }
+      let entry;
+      if (dict[c]) entry = dict[c];
+      else if (c === dictSize) entry = w + w.charAt(0);
+      else return null;
+      result.push(entry);
+      dict[dictSize++] = w + entry.charAt(0);
+      enlargeIn--;
+      w = entry;
+      if (enlargeIn === 0) { enlargeIn = 1 << numBits; numBits++; }
+    }
+  }
+
+  return { compress, decompress };
+})();
+
+const clip = (s, n) => String(s || '').slice(0, n);
+
+function buildShare() {
+  const g = Object.entries(groups)
+    .sort((a, b) => b[1].books.length - a[1].books.length)
+    .map(([genre, d]) => [
+      clip(genre, SHARE_LIMITS.genre), d.books.length, d.ratingSum, d.ratingCount,
+      // Same order the side panel uses: highest rated first.
+      [...d.books].sort((a, x) => x.rating - a.rating).slice(0, 3)
+        .map(b => [clip(b.title, SHARE_LIMITS.title), clip(b.author, SHARE_LIMITS.author), b.rating || 0]),
+    ]);
+  return { v: SHARE_VERSION, n: allBooks.length, g };
+}
+
+function encodeShare(summary) {
+  return LZ.compress(JSON.stringify(summary));
+}
+
+// Throws an Error with a readable message when the payload can't be used.
+function decodeShare(payload) {
+  if (!payload) throw new Error('The link is missing its map data. It may have been cut off when it was copied.');
+  if (payload.length > SHARE_LIMITS.hash) throw new Error('The link is too long to be a BookDNA map.');
+  try { payload = decodeURIComponent(payload); } catch (_) { /* use it as is */ }
+  let json, s;
+  try { json = LZ.decompress(payload); } catch (_) { json = null; }
+  if (!json) throw new Error("The map data in this link couldn't be read. It may have been cut off or changed when it was copied.");
+  try { s = JSON.parse(json); } catch (_) { throw new Error("The map data in this link couldn't be read. It may have been cut off or changed when it was copied."); }
+  if (!s || typeof s !== 'object' || typeof s.v !== 'number') throw new Error("This link doesn't contain a BookDNA map.");
+  if (s.v > SHARE_VERSION) throw new Error('This link was made by a newer version of BookDNA. Reload the page to get the latest version, then try again.');
+  if (s.v !== SHARE_VERSION) throw new Error(`This link uses an old map format (v${s.v}) that this version of BookDNA can't open. Ask for a fresh link.`);
+
+  const int = (x, lo, hi) => Number.isInteger(x) && x >= lo && x <= hi;
+  const bad = () => new Error('The map data in this link is incomplete or damaged.');
+  if (!Array.isArray(s.g) || !s.g.length || s.g.length > SHARE_LIMITS.genres) throw bad();
+  const out = { v: s.v, g: [] };
+  const seen = new Set();
+  for (const e of s.g) {
+    if (!Array.isArray(e) || e.length < 5) throw bad();
+    const [genre, n, rSum, rCnt, top] = e;
+    if (typeof genre !== 'string' || !genre.trim() || seen.has(genre)) throw bad();
+    if (!int(n, 1, 1e6) || !int(rCnt, 0, n) || !int(rSum, rCnt, rCnt * 5) || !Array.isArray(top)) throw bad();
+    seen.add(genre);
+    out.g.push({
+      genre: clip(genre, SHARE_LIMITS.genre), n, ratingSum: rSum, ratingCount: rCnt,
+      top: top.slice(0, 3).filter(t => Array.isArray(t) && typeof t[0] === 'string' && t[0].trim()).map(t => ({
+        title: clip(t[0], SHARE_LIMITS.title),
+        author: clip(typeof t[1] === 'string' ? t[1] : '', SHARE_LIMITS.author),
+        rating: int(t[2], 0, 5) ? t[2] : 0,
+      })),
+    });
+  }
+  const sum = out.g.reduce((a, x) => a + x.n, 0);
+  out.n = int(s.n, 1, 1e6) && s.n >= sum ? s.n : sum;
+  return out;
+}
+
+// Rebuild the genre groups the map and side panel draw from.
+function groupsFromShare(s) {
+  const g = {};
+  for (const x of s.g) {
+    const color = colorForGenre(x.genre);
+    g[x.genre] = {
+      books: x.top.map(t => ({ title: t.title, author: t.author, rating: t.rating, color, genre: x.genre })),
+      n: x.n, color, ratingSum: x.ratingSum, ratingCount: x.ratingCount,
+    };
+  }
+  return g;
+}
+
+function setHash(hash) {
+  lastShareHash = hash;
+  const url = location.pathname + location.search + hash;
+  try { history.replaceState(null, '', url); }
+  catch (_) { location.hash = hash; } // hashchange skips it via lastShareHash
+}
+
+// After a CSV upload: put the summary in the URL so the address bar is the share link.
+function writeShareHash() {
+  try { setHash('#' + SHARE_KEY + encodeShare(buildShare())); }
+  catch (_) { /* sharing is optional; the map still works */ }
+}
+
+function openShared(summary) {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  selGenre = null; hovBubble = null; currentPanelBubble = null;
+  habits = null; insightsJob = null; runId++; // drops any in-flight AI result
+  panX = 0; panY = 0; zoom = 1;
+  document.getElementById('panel').classList.remove('open');
+  allBooks = []; toReadTitles = [];
+  shared = summary;
+  groups = groupsFromShare(summary);
+  hideShareError();
+  switchTab('map');
+  launchDNA();
+}
+
+// Returns true when the hash held a map that is now on screen.
+function bootFromHash() {
+  const h = location.hash;
+  if (!h.startsWith('#' + SHARE_KEY)) return false; // no hash, or someone else's anchor
+  if (h === lastShareHash) return false;            // the hash we just wrote ourselves
+  try {
+    const summary = decodeShare(h.slice(1 + SHARE_KEY.length));
+    lastShareHash = h;
+    openShared(summary);
+    return true;
+  } catch (err) {
+    resetApp(); // clears the bad hash and shows the upload screen
+    showShareError(err.message);
+    return false;
+  }
+}
+window.addEventListener('hashchange', bootFromHash);
+
+function showShareError(msg) {
+  const el = document.getElementById('shareErr');
+  el.innerHTML = `<strong>Couldn't open that shared map.</strong><br>${esc(msg)}<br><br>You can still upload a Goodreads or Libby export below.`;
+  el.style.display = '';
+}
+function hideShareError() {
+  document.getElementById('shareErr').style.display = 'none';
+}
+
+function renderSharedPanes() {
+  const pane = what => `<div class="pane-inner">
+    <div class="pane-h">${what} aren't in shared links</div>
+    <div class="pane-sub">This is a shared BookDNA map. The link carries genre totals and the top 3 books in each genre, not the full reading history, so ${what.toLowerCase()} can't be worked out from it. Upload your own Goodreads or Libby export to see yours.</div>
+    <button class="btn-teal" onclick="resetApp()">Upload your own export</button>
+  </div>`;
+  document.getElementById('paneHabits').innerHTML = pane('Reading habits');
+  document.getElementById('paneForYou').innerHTML = pane('Personal picks');
+}
+
+async function copyShareLink() {
+  if (!shared && !location.hash.startsWith('#' + SHARE_KEY)) writeShareHash();
+  const url = location.href;
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(url);
+    ok = true;
+  } catch (_) {
+    // Older browsers, or http:// pages where the Clipboard API is off
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+    ta.remove();
+  }
+  if (!ok) { window.prompt('Copy this link:', url); return; }
+  const btn = document.getElementById('shareBtn');
+  btn.textContent = '✓ Copied!';
+  btn.classList.add('ok');
+  clearTimeout(copyShareLink.t);
+  copyShareLink.t = setTimeout(() => { btn.textContent = '🔗 Copy shareable link'; btn.classList.remove('ok'); }, 1800);
+}
+window.copyShareLink = copyShareLink;
+
+/* ════════════════════════════════════════
    RESET
 ════════════════════════════════════════ */
 function resetApp() {
@@ -1837,6 +2139,8 @@ function resetApp() {
   allBooks = []; groups = {}; bubbles = [];
   selGenre = null; hovBubble = null;
   habits = null; insightsJob = null; runId++;
+  shared = null;
+  if (location.hash) setHash(''); // the old map's link shouldn't stick around
   switchTab('map');
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('ready'));
   panX = 0; panY = 0; zoom = 1;
@@ -1844,9 +2148,13 @@ function resetApp() {
   document.getElementById('fileInput').value = '';
   document.getElementById('progressRing').style.strokeDashoffset = '289';
   document.getElementById('progressPct').textContent = '0%';
+  hideShareError();
   showView('vLanding');
 }
 window.resetApp = resetApp;
+
+// Opened from a shared link? Go straight to the map.
+bootFromHash();
 </script>
 </body>
 </html>
